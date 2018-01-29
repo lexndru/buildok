@@ -1,0 +1,7 @@
+/build
+*/**/*.pyc
+*/**/*.pyo
+*.pyc
+*.pyo
+buildok_app
+.build
