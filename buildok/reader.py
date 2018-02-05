@@ -20,6 +20,8 @@
 
 import os
 
+from buildok.parser import Parser
+
 class Reader(object):
     """Reader wrapper to gather build steps.
 
@@ -29,15 +31,38 @@ class Reader(object):
     Attributes:
         readers (list): A list of all registered readers.
         reader (str): Reader class name.
-        filename (list): File path with name of the file to read.
+        filename (str): File name of the file to read.
+        filepath (str): File path of the file to read.
     """
     readers = []
     reader = ""
     filename = ""
+    filepath = ""
 
     def __init__(self):
         self.readers.append(self)
         self.reader = self.__class__.__name__
+        if self.filepath != "":
+            if os.path.isfile(self.filepath):
+                self.filename = self.filepath
+            elif os.path.isdir(self.filepath):
+                self.filename = r"{}/{}".format(self.filepath, self.filename)
+
+    def test(self, chunk, start):
+        """Test possible build section.
+
+        Args:
+            chunk (list): A chunk of possible build steps to validate.
+            start (int): Starting index point.
+
+        Return:
+            bool: True if section is validated, otherwise False.
+        """
+        pr = Parser(())
+        for line in chunk[start + 1:]:
+            if line != "":
+                return pr.is_valid(line)
+        return False
 
     def read(self):
         """Read build file content.

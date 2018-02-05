@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from reader import Reader
+from buildok.reader import Reader
 
 class FileReader(Reader):
     """File class helper to detect, create and read a certain given file.
@@ -29,7 +29,7 @@ class FileReader(Reader):
     """
     READ_MODE, WRITE_MODE = "rb", "wb"
     filename = r".build"
-    sample_build = r"1) Open browser `http://skyle.codeissues.net/`!" # TODO: create buildok page
+    sample_build = r"1) Open browser `https://github.com/lexndru/buildok`!"
 
     def read(self):
         """Read build file content.

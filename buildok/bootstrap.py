@@ -18,15 +18,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from statement import Statement
-from parser import Parser
-from reader import Reader
+from buildok.statement import Statement
+from buildok.parser import Parser
+from buildok.reader import Reader
 
-from readers.file import FileReader
-from readers.readme import ReadmeReader
+from buildok.readers.file import FileReader
+from buildok.readers.read_me import ReadmeReader
 
-from util.console import Console, timeit_log
+from buildok.util.console import Console, timeit_log
+from buildok.util.shell import Shell
 
+
+def setup():
+    """Setup project path and verbose level.
+
+    Raises:
+        SystemExit: If any error occurs while parsing command line arguments.
+    """
+    args = Shell.parse()
+    if args.project is not None:
+        Reader.filepath = args.project
+    Console.verbose = args.verbose
+    if args.generate is not None:
+        Console.fatal("Generate flag is not supported at this moment")
 
 def read(first=True):
     """Read all posible sources.
@@ -42,7 +56,14 @@ def read(first=True):
         fr = FileReader()
         if not fr.exists():
             raise Console.fatal("Nothing to build from...")
-    return Reader.get_first() if first else Reader.get_all()
+        else:
+            Console.info("Building from file")
+    else:
+        Console.info("Building from README")
+    steps = Reader.get_first() if first else Reader.get_all()
+    for s in steps:
+        Console.info("  %s" % s)
+    return steps
 
 
 def run(steps, last_step="n/a"):
@@ -69,10 +90,8 @@ def run(steps, last_step="n/a"):
 
 @timeit_log
 def main():
+    setup()
     steps = read()
     if len(steps) == 0:
         raise Console.fatal("Nothing to build")
     run(steps)
-
-if __name__ == "__main__":
-    main()

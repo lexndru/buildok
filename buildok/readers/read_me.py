@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from reader import Reader
+from buildok.reader import Reader
 
 class ReadmeReader(Reader):
     """File class helper to detect and read a README file.
@@ -69,7 +69,7 @@ class ReadmeReader(Reader):
             if len(line) == 0:
                 newlines.append(idx)
             for section in self.build_section:
-                if section in line.lower():
+                if section in line.lower() and self.test(ctx, idx):
                     steps_start = idx
                     break
             if len(newlines) > 2:

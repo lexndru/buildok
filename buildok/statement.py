@@ -20,11 +20,11 @@
 
 import re
 
-from statements.shell import exec_shell
-from statements.chdir import change_dir
-from statements.copy import copy_files
-from statements.move import move_files
-from statements.remove import remove_files
+from buildok.statements.shell import exec_shell
+from buildok.statements.chdir import change_dir
+from buildok.statements.copy import copy_files
+from buildok.statements.move import move_files
+from buildok.statements.remove import remove_files
 
 class Statement(object):
     """Statement parser.

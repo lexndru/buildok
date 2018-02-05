@@ -28,8 +28,10 @@ class Console(object):
     Attributes:
         start_time (int): Start time of console logging.
         stop_time (int): Stop time of console logging.
+        verbose (bool): Set verbose level on or off.
     """
     start_time, stop_time = 0, 0
+    verbose = False
 
     @classmethod
     def start(cls, message=None):
@@ -39,7 +41,7 @@ class Console(object):
             message (str): Optional message to display on start-up.
         """
         cls.start_time = timeit.default_timer()
-        if message is not None:
+        if cls.verbose and message is not None:
             print("[Build] %s" % message)
 
     @classmethod
@@ -50,7 +52,7 @@ class Console(object):
             message (str): Optional message to display on end.
         """
         cls.stop_time = timeit.default_timer()
-        if message is not None:
+        if cls.verbose and message is not None:
             print("\033[92m[Build] %s\033[0m" % message)
         print("\033[92m\033[1m[Build] OK (runtime %ss)\033[0m" % (cls.stop_time - cls.start_time))
 
@@ -61,7 +63,8 @@ class Console(object):
         Args:
             message (str): Message to display.
         """
-        print(u"\033[92m[Build] %s\033[0m" % str(message))
+        if cls.verbose:
+            print(u"\033[92m[Build] %s\033[0m" % str(message))
 
     @classmethod
     def eval(cls, message):
@@ -70,7 +73,8 @@ class Console(object):
         Args:
             message (str): Message to display.
         """
-        print(u"[Yield] %s" % str(message))
+        if cls.verbose:
+            print(u"\033[93m[Yield] %s\033[0m" % str(message))
 
     class fatal(SystemExit):
         """Console fatal error message.
