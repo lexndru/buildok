@@ -39,10 +39,10 @@ class Shell(object):
             "dest": "verbose",
             "help": "verbose output"
         },
-        ("-g", "--generate"): {
+        ("-c", "--convert"): {
             "action": "store",
-            "dest": "generate",
-            "help": "generate automated build scripts"
+            "dest": "convert",
+            "help": "create automated build scripts from build steps"
         },
     }
 

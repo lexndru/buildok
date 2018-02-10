@@ -28,7 +28,7 @@ def remove_files(src=None):
         src (str): Source of files.
 
     Retuns:
-        bool: True on success, otherwise False.
+        str: Human readable descriptor message or error.
 
     Raises:
         OSError: If an invalid `src` is provided.
@@ -42,7 +42,7 @@ def remove_files(src=None):
             remove(src)
         elif path.isdir(src):
             rmtree(src)
-        return True
+        return "Removed %s" % src
     except OSError as e:
         raise e
-    return False
+    return "Nothing to remove"

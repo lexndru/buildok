@@ -18,26 +18,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import chdir
+from os import chmod
 
-def change_dir(path=None):
-    r"""Change current working directory.
+def change_mod(mode=400, path=None):
+    r"""Change permissions on file or directory.
 
     Args:
-        path (str): Path to new working directory.
+        mode (int): Octal integer permissions.
+        path (str): Path to file or directory.
 
     Retuns:
         str: Human readable descriptor message or error.
 
     Raises:
         OSError: If an invalid `path` is provided.
+        TypeError: If an invalid `mode` is provided.
 
     Accepted statements:
-        ^go to `(?P<path>.+)`[\.\?\!]$
+        ^change permissions to `(?P<mode>.+)` on `(?P<path>.+)`[\.\?\!]$
+        ^change mod `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
+        ^set `(?P<mode>.+)` permissions to `(?P<path>.+)`[\.\?\!]$
     """
     try:
-        chdir(path)
-        return "Changed directory to %s" % path
+        mode = oct(int("0%d" % mode, 8))
+        chmod(path, mode)
+        return "Changed permissions %s => %s" % (mode, path)
     except OSError as e:
         raise e
-    return "Nowhere to go"
+    except TypeError as e:
+        raise e
+    return "Nothing to do"

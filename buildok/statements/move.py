@@ -40,7 +40,7 @@ def move_files(src=None, dst=None):
     """
     try:
         move(src, dst)
-        return "%s => %s" % (src, dst)
+        return "Moved %s => %s" % (src, dst)
     except OSError as e:
         raise e
-    return "Action not available"
+    return "Nothing to move"

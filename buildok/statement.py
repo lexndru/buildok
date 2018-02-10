@@ -22,6 +22,8 @@ import re
 
 from buildok.statements.shell import exec_shell
 from buildok.statements.chdir import change_dir
+from buildok.statements.chmod import change_mod
+from buildok.statements.chown import change_own
 from buildok.statements.copy import copy_files
 from buildok.statements.move import move_files
 from buildok.statements.remove import remove_files
@@ -37,6 +39,8 @@ class Statement(object):
     known_actions = {
         exec_shell,
         change_dir,
+        change_mod,
+        change_own,
         copy_files,
         move_files,
         remove_files,
@@ -56,6 +60,8 @@ class Statement(object):
             for stmt in cls.parse_func(func):
                 result = re.match(stmt, step, re.I)
                 if result is not None:
+                    print result, dir(result)
+                    raise SystemExit
                     return func(*result.groups())
         return None
 

@@ -18,13 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import chdir
+from pwd import getpwnam
+from grp import getgrnam
+from os import chown
 
-def change_dir(path=None):
-    r"""Change current working directory.
+def change_own(owner=None, group=None, path=None):
+    r"""Change owner and group on file or directory.
 
     Args:
-        path (str): Path to new working directory.
+        owner (str): User name.
+        group (str): Group name.
+        path (str): Path to file or directory.
 
     Retuns:
         str: Human readable descriptor message or error.
@@ -33,11 +37,13 @@ def change_dir(path=None):
         OSError: If an invalid `path` is provided.
 
     Accepted statements:
-        ^go to `(?P<path>.+)`[\.\?\!]$
+        ^change file owner to `(?P<owner>.+)` on `(?P<path>.+)`[\.\?\!]$
     """
     try:
-        chdir(path)
-        return "Changed directory to %s" % path
+        uid = getpwnam(owner).pw_uid
+        gid = getgrnam(group).gr_gid
+        chown(path, uid, gid)
+        return "Changed owner and group %s:%s => %s" % (owner, group, path)
     except OSError as e:
         raise e
-    return "Nowhere to go"
+    return "Nothing to do"

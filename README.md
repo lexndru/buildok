@@ -6,6 +6,9 @@ There are two possible ways to make use of this tool. You either create a file n
 or write a new section in your `README.md` file starting with one of the following statements: "how to build ok" or "build ok steps".
 Each step you write has to respect the following pattern: `n) build step <punctuation>` where `n` is a number and `<punctuation>` is one of the following: `.`, `!` or `?`.
 
+## Supported statements
+Copy, move, rename, remove, make directory, make symlink, change permissions, owner and group and exec shell.
+
 ## How to build OK
 1) Run `pwd`!
 2) Copy `src/` files to `/tmp/_buildok`.
