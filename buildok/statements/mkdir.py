@@ -18,27 +18,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from subprocess import check_output, CalledProcessError, STDOUT
+from os import makedirs
 
-def exec_shell(cmd=None):
-    r"""Run a command in shell.
+def make_dir(path=None):
+    r"""Make a directory or make recursive directories.
 
     Args:
-        cmd (str): Raw shell command.
+        path (str): Path to directory.
 
     Retuns:
-        str: Output as string.
+        str: Human readable descriptor message or error.
 
     Raises:
-        OSError: If an invalid `cmd` is provided.
+        OSError: If an invalid `path` is provided or if path already exists.
 
     Accepted statements:
-        ^run `(?P<cmd>.+)`[\.\?\!]$
+        ^create folder `(?P<path>.+)`[\.\?\!]$
+        ^create directory `(?P<path>.+)`[\.\?\!]$
+        ^make new folder `(?P<path>.+)`[\.\?\!]$
+        ^make new directory `(?P<path>.+)`[\.\?\!]$
     """
     try:
-        output = check_output(cmd.split(), stderr=STDOUT)
-    except CalledProcessError as e:
-        return e.output
-    if output is None:
-        return "n/a"
-    return output.decode('utf-8').strip()
+        makedirs(path)
+        return "Created new directory => %s" % path
+    except OSError as e:
+        raise e
+    return "Nothing to do"

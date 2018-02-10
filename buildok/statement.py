@@ -20,13 +20,17 @@
 
 import re
 
+from buildok.statements.web import exec_web
 from buildok.statements.shell import exec_shell
 from buildok.statements.chdir import change_dir
 from buildok.statements.chmod import change_mod
 from buildok.statements.chown import change_own
+from buildok.statements.mkdir import make_dir
+from buildok.statements.kill import kill_proc
 from buildok.statements.copy import copy_files
 from buildok.statements.move import move_files
 from buildok.statements.remove import remove_files
+from buildok.statements.symlink import make_symlink
 
 class Statement(object):
     """Statement parser.
@@ -37,6 +41,7 @@ class Statement(object):
     """
     statement_header = r"accepted statements"
     known_actions = {
+        exec_web,
         exec_shell,
         change_dir,
         change_mod,
@@ -44,7 +49,42 @@ class Statement(object):
         copy_files,
         move_files,
         remove_files,
+        make_symlink,
+        make_dir,
+        kill_proc,
     }
+
+    @classmethod
+    def analyze(cls):
+        """Analyze all statements.
+
+        Returns:
+            list: List of all statements including duplicated.
+        """
+        results, stmts = [], set([])
+        for idx1, func in enumerate(cls.known_actions):
+            class_ = func.__name__
+            funcs = cls.parse_func(func)
+            for idx2, stmt in enumerate(funcs):
+                status = "duplicated" if stmt in stmts else "ok"
+                line = ("%d.%d" % (idx1+1, idx2+1), class_, stmt, status)
+                results.append(line)
+                stmts.add(stmt)
+        set_max = lambda o, s: len(s) if len(s) > o else o
+        ids_max_len, grp_max_len, stmt_max_len, status_max_len = 0, 0, 0, 0
+        for ids, grp, stmt, status in results:
+            ids_max_len, grp_max_len = set_max(ids_max_len, ids), set_max(grp_max_len, grp)
+            stmt_max_len, status_max_len = set_max(stmt_max_len, stmt), set_max(status_max_len, status)
+        line = "| %-" + str(ids_max_len) + "s | %-" + str(grp_max_len) + "s | "
+        line += "%-" + str(stmt_max_len) + "s | %-" + str(status_max_len) + "s |"
+        header = line % ("", "Group", "Statement", "")
+        sep = "-" * len(header)
+        lines = [header, sep]
+        for r in results:
+            color = "\033[101m" if r[-1] == "duplicated" else "\033[94m"
+            lines.append((color + line + "\033[0m") % r)
+        lines.append(sep)
+        return lines
 
     @classmethod
     def parse(cls, step):
@@ -60,17 +100,16 @@ class Statement(object):
             for stmt in cls.parse_func(func):
                 result = re.match(stmt, step, re.I)
                 if result is not None:
-                    print result, dir(result)
-                    raise SystemExit
-                    return func(*result.groups())
+                    return func(**result.groupdict())
         return None
 
     @classmethod
-    def parse_func(cls, func):
+    def parse_func(cls, func, statement_header=None):
         """Extract "accepted statements" from function doc string.
 
         Args:
             func (function): Statement function equivalent.
+            statement_header (str): Headline to look up (default None).
 
         Raises:
             SystemExit: If `func` is not a function.
@@ -80,16 +119,19 @@ class Statement(object):
         """
         if not callable(func):
             raise SystemExit("Expected callable function")
+        if statement_header is None:
+            statement_header = cls.statement_header
         lines = func.__doc__.split("\n")
         start_line = -1
         newlines = []
         for idx, line in enumerate(lines):
             line = line.rstrip()
-            if cls.statement_header in line.lower():
-                start_line = idx
-                break
-            if len(line) == 0:
+            if len(line.strip()) == 0:
                 newlines.append(idx)
+            if start_line == -1 and statement_header in line.lower():
+                start_line = idx
+        if len(lines) - 1 == newlines[-1]:
+            newlines.pop()
         if len(newlines) > 0 and newlines[-1] > start_line:
             rows = lines[1 + start_line:newlines[-1]]
         else:

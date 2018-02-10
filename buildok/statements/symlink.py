@@ -18,27 +18,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from subprocess import check_output, CalledProcessError, STDOUT
+from os import symlink, getcwd
 
-def exec_shell(cmd=None):
-    r"""Run a command in shell.
+def make_symlink(src=None, dst=None):
+    r"""Make a directory or make recursive directories.
 
     Args:
-        cmd (str): Raw shell command.
+        src (str): Source of files.
+        dst (str): Target destination of symlink.
 
     Retuns:
-        str: Output as string.
+        str: Human readable descriptor message or error.
 
     Raises:
-        OSError: If an invalid `cmd` is provided.
+        OSError: If an invalid `src` or `dst` is provided or if `dst` already exists.
 
     Accepted statements:
-        ^run `(?P<cmd>.+)`[\.\?\!]$
+        ^create symlink from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
+        ^make symlink `(?P<dst>.+)` from `(?P<src>.+)`[\.\?\!]$
+        ^make symlink `(?P<dst>.+)`[\.\?\!]$
     """
     try:
-        output = check_output(cmd.split(), stderr=STDOUT)
-    except CalledProcessError as e:
-        return e.output
-    if output is None:
-        return "n/a"
-    return output.decode('utf-8').strip()
+        if src is None:
+            src = getcwd()
+        symlink(src, dst)
+        return "Created symlink %s => %s" % (src, dst)
+    except OSError as e:
+        raise e
+    return "Nothing to do"

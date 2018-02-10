@@ -44,6 +44,11 @@ class Shell(object):
             "dest": "convert",
             "help": "create automated build scripts from build steps"
         },
+        ("-a", "--analyze"): {
+            "action": "store_true",
+            "dest": "analyze",
+            "help": "scan all known statements"
+        },
     }
 
     @classmethod

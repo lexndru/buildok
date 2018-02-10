@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Copyright 2018 Alexandru Catrina
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,27 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from subprocess import check_output, CalledProcessError, STDOUT
+from test.tester import main
 
-def exec_shell(cmd=None):
-    r"""Run a command in shell.
-
-    Args:
-        cmd (str): Raw shell command.
-
-    Retuns:
-        str: Output as string.
-
-    Raises:
-        OSError: If an invalid `cmd` is provided.
-
-    Accepted statements:
-        ^run `(?P<cmd>.+)`[\.\?\!]$
-    """
-    try:
-        output = check_output(cmd.split(), stderr=STDOUT)
-    except CalledProcessError as e:
-        return e.output
-    if output is None:
-        return "n/a"
-    return output.decode('utf-8').strip()
+if __name__ == "__main__":
+    main()

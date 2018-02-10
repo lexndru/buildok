@@ -20,7 +20,7 @@
 
 from pwd import getpwnam
 from grp import getgrnam
-from os import chown
+from os import chown, getcwd
 
 def change_own(owner=None, group=None, path=None):
     r"""Change owner and group on file or directory.
@@ -38,10 +38,20 @@ def change_own(owner=None, group=None, path=None):
 
     Accepted statements:
         ^change file owner to `(?P<owner>.+)` on `(?P<path>.+)`[\.\?\!]$
+        ^change user to `(?P<owner>.+)` on `(?P<path>.+)`[\.\?\!]$
+        ^change user and group to `(?P<owner>.+):(?P<group>.+)`[\.\?\!]$
     """
     try:
-        uid = getpwnam(owner).pw_uid
-        gid = getgrnam(group).gr_gid
+        if owner is not None:
+            uid = getpwnam(owner).pw_uid
+        else:
+            uid = -1
+        if group is not None:
+            gid = getgrnam(group).gr_gid
+        else:
+            gid = -1
+        if path is None:
+            path = getcwd()
         chown(path, uid, gid)
         return "Changed owner and group %s:%s => %s" % (owner, group, path)
     except OSError as e:

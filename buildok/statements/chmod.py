@@ -18,13 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import chmod
+from os import chmod, getcwd
 
-def change_mod(mode=400, path=None):
+def change_mod(mode="400", path=None):
     r"""Change permissions on file or directory.
 
     Args:
-        mode (int): Octal integer permissions.
+        mode (str): Octal integer permissions.
         path (str): Path to file or directory.
 
     Retuns:
@@ -35,12 +35,14 @@ def change_mod(mode=400, path=None):
         TypeError: If an invalid `mode` is provided.
 
     Accepted statements:
-        ^change permissions to `(?P<mode>.+)` on `(?P<path>.+)`[\.\?\!]$
-        ^change mod `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
-        ^set `(?P<mode>.+)` permissions to `(?P<path>.+)`[\.\?\!]$
+        ^change permissions to `(?P<mode>.+)`[\.\?\!]$
+        ^change permissions `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
+        ^set permissions to `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
     """
     try:
-        mode = oct(int("0%d" % mode, 8))
+        mode = oct(int("0%s" % mode, 8))
+        if path is None:
+            path = getcwd()
         chmod(path, mode)
         return "Changed permissions %s => %s" % (mode, path)
     except OSError as e:
@@ -48,3 +50,16 @@ def change_mod(mode=400, path=None):
     except TypeError as e:
         raise e
     return "Nothing to do"
+
+
+def change_mod_test(*args, **kwargs):
+    """Test if it's possible to change permissions.
+
+    Build steps:
+        1) Run `touch /tmp/buildok_test.txt`.
+        2) Change permissions to `400` for `/tmp/buildok_test.txt`.
+
+    Expected:
+        Changed permissions 400 => /tmp/buildok_test.txt
+    """
+    return change_mod(*args, **kwargs)

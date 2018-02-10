@@ -18,27 +18,28 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from subprocess import check_output, CalledProcessError, STDOUT
+import webbrowser as wb
 
-def exec_shell(cmd=None):
-    r"""Run a command in shell.
+def exec_web(url=None):
+    r"""Open a link in default browser.
 
     Args:
-        cmd (str): Raw shell command.
+        url (str): URL to open.
 
     Retuns:
         str: Output as string.
 
     Raises:
-        OSError: If an invalid `cmd` is provided.
+        TypeError: If an invalid `url` is provided.
 
     Accepted statements:
-        ^run `(?P<cmd>.+)`[\.\?\!]$
+        ^open in browser `(?P<url>.+)`[\.\?\!]$
+        ^open link `(?P<url>.+)`[\.\?\!]$
+        ^open url `(?P<url>.+)`[\.\?\!]$
     """
     try:
-        output = check_output(cmd.split(), stderr=STDOUT)
-    except CalledProcessError as e:
-        return e.output
-    if output is None:
-        return "n/a"
-    return output.decode('utf-8').strip()
+        wb.get().open(url, new=2)
+        return "Opened URL in browser => %s" % url
+    except TypeError as e:
+        raise e
+    return "Nothing to do"

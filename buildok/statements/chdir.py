@@ -41,3 +41,15 @@ def change_dir(path=None):
     except OSError as e:
         raise e
     return "Nowhere to go"
+
+
+def change_dir_test(*args, **kwargs):
+    """Test if current working directory is being changed.
+
+    Build steps:
+        1) Go to `/tmp`.
+
+    Expected:
+        Changed directory to /tmp
+    """
+    return change_dir(*args, **kwargs)

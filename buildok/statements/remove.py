@@ -36,6 +36,8 @@ def remove_files(src=None):
     Accepted statements:
         ^remove from `(?P<src>.+)`[\.\?\!]$
         ^remove `(?P<src>.+)` files[\.\?\!]$
+        ^remove directory `(?P<src>.+)`[\.\?\!]$
+        ^remove folder `(?P<src>.+)`[\.\?\!]$
     """
     try:
         if path.isfile(src):

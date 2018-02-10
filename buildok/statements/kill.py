@@ -18,27 +18,39 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from subprocess import check_output, CalledProcessError, STDOUT
+from os import kill
+from signal import SIGTERM
+from subprocess import check_output, CalledProcessError
 
-def exec_shell(cmd=None):
-    r"""Run a command in shell.
+def kill_proc(pid=None, pname=None):
+    r"""Send SIGTERM signal to a process.
 
     Args:
-        cmd (str): Raw shell command.
+        pid (int): Process ID.
+        pname (str): Process name.
 
     Retuns:
-        str: Output as string.
+        str: Human readable descriptor message or error.
 
     Raises:
-        OSError: If an invalid `cmd` is provided.
+        OSError: If an invalid `pid` or `pname` is provided.
+        CalledProcessError: If `pname` is not found.
 
     Accepted statements:
-        ^run `(?P<cmd>.+)`[\.\?\!]$
+        ^kill process `(?P<pname>.+)`[\.\?\!]$
+        ^kill pid `(?P<pid>.+)`[\.\?\!]$
+        ^stop process `(?P<pname>.+)`[\.\?\!]$
+        ^stop pid `(?P<pid>.+)`[\.\?\!]$
     """
     try:
-        output = check_output(cmd.split(), stderr=STDOUT)
+        if pname is not None:
+            pid = check_output(["pidof", "-s", name])
+        if pid is None:
+            raise ValueError
+        kill(int(pid), SIGTERM)
+        return "Terminated process PID => %d" % pid
+    except OSError as e:
+        raise e
     except CalledProcessError as e:
-        return e.output
-    if output is None:
-        return "n/a"
-    return output.decode('utf-8').strip()
+        raise e
+    return "Nothing to do"
