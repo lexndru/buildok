@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 from converters.bash import unpack_bash
+from util.console import Console
 
 
 class Converter(object):
@@ -55,5 +56,6 @@ class Converter(object):
             lines.append(func(**s.args))
         with open(fname, "w") as file_:
             data = template.format(lang="\n".join(lines))
+            print data
             file_.write(data)
-        return "Converted %d steps to %s file" % (len(lines), fname)
+        Console.info("Converted %d steps to %s file" % (len(lines), fname))
