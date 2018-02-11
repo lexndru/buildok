@@ -7,17 +7,25 @@ or write a new section in your `README.md` file starting with one of the followi
 Each step you write has to respect the following pattern: `n) build step <punctuation>` where `n` is a number and `<punctuation>` is one of the following: `.`, `!` or `?`.
 
 ## Supported statements
-Copy, move, rename, remove, make directory, make symlink, change permissions, owner and group and exec shell.
+ - open link
+ - copy files
+ - move files
+ - rename files
+ - remove files
+ - make directory
+ - make symlink
+ - change working directory
+ - change permissions
+ - change owner and group
+ - exec shell commands
+ - kill process
 
 ## How to build OK
-1) Run `pwd`!
-2) Copy `src/` files to `/tmp/_buildok`.
-3) Go to `/tmp/_buildok`!
-4) Run `python -m compileall .`.
-5) Remove `*.py` files.
-6) Run `ls -l`.
-7) Run `zip -r build.zip .`.
-8) Rename `build.zip` to `build`.
+1) Create folder `/tmp/_buildok`.
+2) Go to `/tmp/_buildok`!
+3) Run `pwd`!
+4) Open link `https://github.com/lexndru/buildok`.
+5) Run `echo Hello, friendly world`.
 
 ## License
 Copyright 2018 Alexandru Catrina
