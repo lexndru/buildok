@@ -22,7 +22,7 @@ from os import kill
 from signal import SIGTERM
 from subprocess import check_output, CalledProcessError
 
-def kill_proc(pid=None, pname=None):
+def kill_proc(pid=None, pname=None, *args, **kwargs):
     r"""Send SIGTERM signal to a process.
 
     Args:

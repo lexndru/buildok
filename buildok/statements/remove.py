@@ -21,7 +21,7 @@
 from os import path, remove
 from shutil import rmtree
 
-def remove_files(src=None):
+def remove_files(src=None, *args, **kwargs):
     r"""Remove files from a given source.
 
     Args:

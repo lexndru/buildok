@@ -37,22 +37,6 @@ class Parser(object):
             raise TypeError("Unexpected steps datatype")
         self.steps, self.build = steps, [None] * len(steps)
 
-    def is_valid(self, step):
-        """Test if a step is valid.
-
-        Args:
-            step (str): Raw step to test.
-
-        Returns:
-            bool: True if `step` has a valid pattern, otherwise False.
-        """
-        result = self.PATTERN.match(step)
-        try:
-            step = result.group("step")
-            return len(step) > 1
-        except:
-            return False
-
     def prepare(self, validate=False):
         """Prepare, parse and sort build steps.
 
@@ -63,7 +47,7 @@ class Parser(object):
             self: Parser
         """
         for s in self.steps:
-            if not self.is_valid(s):
+            if not Parser.is_valid(s):
                 self.build.pop()
                 continue
             sep = s.find(")")
@@ -90,3 +74,82 @@ class Parser(object):
             str: Raw step string.
         """
         return self.build.pop()
+
+    @classmethod
+    def is_valid(cls, step):
+        """Test if a step is valid.
+
+        Args:
+            step (str): Raw step to test.
+
+        Returns:
+            bool: True if `step` has a valid pattern, otherwise False.
+        """
+        result = cls.PATTERN.match(step)
+        try:
+            step = result.group("step")
+            return len(step) > 1
+        except:
+            return False
+
+    @classmethod
+    def all_valid(cls, steps):
+        """Test if all steps are valid.
+
+        Args:
+            steps (list): List of steps to test.
+
+        Returns:
+            bool: True if all steps are valid, otherwise False.
+        """
+        if len(steps) == 0:
+            return False
+        return all([cls.is_valid(s) for s in steps])
+
+    @classmethod
+    def parse(cls, ctx=[], headlines=[], test=False):
+        """Parse ctx and look for build steps.
+
+        Args:
+            ctx (list): Original content as lines.
+
+        Returns:
+            list: Non-empty list if build steps are found.
+        """
+        steps_start, steps_stop = -1, -1
+        steps, newlines = [], []
+        for idx, line_ in enumerate(ctx):
+            line = line_.rstrip()
+            if steps_start > -1:
+                if len(newlines) > 0 and newlines[-1] > steps_start + 1:
+                    break
+                steps.append(line)
+            if len(line) == 0:
+                newlines.append(idx)
+            for section in headlines:
+                if section in line.lower():
+                    if test and not cls.test_steps(ctx, idx):
+                        continue
+                    steps_start = idx
+                    break
+            if len(newlines) > 2:
+                a, b = newlines[:-3:-1]
+                if a == b + 1:
+                    steps_stop = idx
+                    break
+        return [s.strip() for s in steps if s]
+
+    @classmethod
+    def test_steps(cls, ctx, start_index):
+        """Test if a section contains valid steps.
+
+        Args:
+            ctx (list): Steps context.
+
+        Returns:
+            bool: True if section contains valid steps, otherwise False.
+        """
+        for line in ctx[start_index+1:]:
+            if line != "":
+                return cls.is_valid(line)
+        return False

@@ -20,7 +20,7 @@
 
 from os import chmod, getcwd
 
-def change_mod(mode="400", path=None):
+def change_mod(mode="400", path=None, *args, **kwargs):
     r"""Change permissions on file or directory.
 
     Args:

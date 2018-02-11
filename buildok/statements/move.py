@@ -20,7 +20,7 @@
 
 from shutil import move
 
-def move_files(src=None, dst=None):
+def move_files(src=None, dst=None, *args, **kwargs):
     r"""Move files from a given source to a given destination.
 
     Args:

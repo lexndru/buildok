@@ -20,7 +20,7 @@
 
 from os import chdir
 
-def change_dir(path=None):
+def change_dir(path=None, *args, **kwargs):
     r"""Change current working directory.
 
     Args:

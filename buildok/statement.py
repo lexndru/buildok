@@ -20,6 +20,8 @@
 
 import re
 
+from buildok.parser import Parser
+
 from buildok.statements.web import exec_web
 from buildok.statements.shell import exec_shell
 from buildok.statements.chdir import change_dir
@@ -38,7 +40,11 @@ class Statement(object):
     Attributes:
         statement_header (str): Lookup string before build steps.
         known_actions (frozen set): Set of all known statements and actions.
+        step (str): Raw step statement.
+        stmt (func): Matched statement from `known_actions`.
+        statements (list): List of all statements.
     """
+    statements = []
     statement_header = r"accepted statements"
     known_actions = {
         exec_web,
@@ -54,6 +60,56 @@ class Statement(object):
         kill_proc,
     }
 
+    def __init__(self, step):
+        self.step = step
+        self.stmt, self.args = self.parse()
+        self.statements.append(self)
+
+    def __str__(self):
+        return "Step: %s\nStatement: %s\nArguments: %s" % (self.step, self.stmt.__name__, self.args)
+
+    def run(self):
+        """Run statement and return output.
+
+        Returns:
+            str: Output from statement.
+        """
+        return self.stmt(**self.args)
+
+    def parse(self):
+        """Translate a step into a statement.
+
+        Return:
+            NoneType: If no statement was found, otherwise mixt.
+        """
+        for func in self.known_actions:
+            for stmt in self.parse_func(func):
+                result = re.match(stmt, self.step, re.I)
+                if result is None:
+                    continue
+                return func, result.groupdict()
+        return None
+
+    def parse_func(self, func, statement_header=None, test=False):
+        """Extract "accepted statements" from function doc string.
+
+        Args:
+            func (function): Statement function equivalent.
+            statement_header (str): Headline to look up (default None).
+
+        Raises:
+            SystemExit: If `func` is not a function.
+
+        Returns:
+            list: List of possible statements.
+        """
+        if not callable(func):
+            raise SystemExit("Expected callable function")
+        if statement_header is None:
+            statement_header = self.statement_header
+        lines = func.__doc__.split("\n")
+        return Parser.parse(tuple(lines), [statement_header], test=test)
+
     @classmethod
     def analyze(cls):
         """Analyze all statements.
@@ -64,7 +120,8 @@ class Statement(object):
         results, stmts = [], set([])
         for idx1, func in enumerate(cls.known_actions):
             class_ = func.__name__
-            funcs = cls.parse_func(func)
+            lines = func.__doc__.split("\n")
+            funcs = Parser.parse(lines, [cls.statement_header], False)
             for idx2, stmt in enumerate(funcs):
                 status = "duplicated" if stmt in stmts else "ok"
                 line = ("%d.%d" % (idx1+1, idx2+1), class_, stmt, status)
@@ -85,61 +142,3 @@ class Statement(object):
             lines.append((color + line + "\033[0m") % r)
         lines.append(sep)
         return lines
-
-    @classmethod
-    def parse(cls, step):
-        """Translate a step into a statement.
-
-        Args:
-            step (str): Raw build step to lookup.
-
-        Return:
-            NoneType: If no statement was found, otherwise mixt.
-        """
-        for func in cls.known_actions:
-            for stmt in cls.parse_func(func):
-                result = re.match(stmt, step, re.I)
-                if result is not None:
-                    return func(**result.groupdict())
-        return None
-
-    @classmethod
-    def parse_func(cls, func, statement_header=None):
-        """Extract "accepted statements" from function doc string.
-
-        Args:
-            func (function): Statement function equivalent.
-            statement_header (str): Headline to look up (default None).
-
-        Raises:
-            SystemExit: If `func` is not a function.
-
-        Returns:
-            list: List of possible statements.
-        """
-        if not callable(func):
-            raise SystemExit("Expected callable function")
-        if statement_header is None:
-            statement_header = cls.statement_header
-        lines = func.__doc__.split("\n")
-        start_line = -1
-        newlines = []
-        for idx, line in enumerate(lines):
-            line = line.rstrip()
-            if len(line.strip()) == 0:
-                newlines.append(idx)
-            if start_line == -1 and statement_header in line.lower():
-                start_line = idx
-        if len(newlines) > 0:
-            stop = -1
-            for i in newlines:
-                if i > start_line:
-                    stop = i
-                    break
-            if stop > start_line:
-                rows = lines[1 + start_line:stop]
-            else:
-                rows = lines[1 + start_line:]
-        else:
-            rows = lines[1 + start_line:]
-        return [l.strip() for l in rows if l.strip()]

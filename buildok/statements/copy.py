@@ -23,7 +23,7 @@ from glob import glob
 from shutil import copy
 from distutils.dir_util import copy_tree
 
-def copy_files(src=None, dst=None):
+def copy_files(src=None, dst=None, *args, **kwargs):
     r"""Copy files from a given source to a given destination.
 
     Args:

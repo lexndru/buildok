@@ -20,7 +20,7 @@
 
 from os import symlink, getcwd
 
-def make_symlink(src=None, dst=None):
+def make_symlink(src=None, dst=None, *args, **kwargs):
     r"""Make a directory or make recursive directories.
 
     Args:

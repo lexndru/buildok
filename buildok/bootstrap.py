@@ -28,6 +28,8 @@ from buildok.readers.read_me import ReadmeReader
 from buildok.util.console import Console, timeit_log
 from buildok.util.shell import Shell
 
+from converter import Converter
+
 
 def setup():
     """Setup project path and verbose level.
@@ -46,7 +48,7 @@ def setup():
     if args.project is not None:
         Reader.filepath = args.project
     if args.convert is not None:
-        Console.fatal("Convert flag is not supported at this moment")
+        Converter.prepare(args.convert)
     return True
 
 def read(first=True):
@@ -67,10 +69,9 @@ def read(first=True):
             Console.info("Building from README")
     else:
         Console.info("Building from file")
-    pr = Parser(())
     steps = Reader.get_first() if first else Reader.get_all()
     for s in steps:
-        if pr.is_valid(s):
+        if Parser.is_valid(s):
             Console.info("  %s" % s)
         else:
             Console.warn("  %s <--- bad grammar" % s)
@@ -95,9 +96,11 @@ def run(steps, last_step="n/a"):
         if step is None:
             raise Console.fatal("Unexpected step found after: %s" % last_step)
         Console.info(step)
-        results = Statement.parse(step)
+        stmt = Statement(step)
+        results = stmt.run()
         Console.eval(results)
         last_step = step
+    Converter.save(Statement.statements)
 
 @timeit_log
 def main():

@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 from buildok.reader import Reader
+from buildok.parser import Parser
 
 class ReadmeReader(Reader):
     """File class helper to detect and read a README file.
@@ -58,23 +59,4 @@ class ReadmeReader(Reader):
         Returns:
             list: Non-empty list if build steps are found.
         """
-        steps_start, steps_stop = -1, -1
-        steps, newlines = [], []
-        for idx, line_ in enumerate(ctx):
-            line = line_.rstrip()
-            if steps_start > -1:
-                if len(newlines) > 0 and newlines[-1] > steps_start + 1:
-                    break
-                steps.append(line)
-            if len(line) == 0:
-                newlines.append(idx)
-            for section in self.build_section:
-                if section in line.lower() and self.test(ctx, idx):
-                    steps_start = idx
-                    break
-            if len(newlines) > 2:
-                a, b = newlines[:-3:-1]
-                if a == b + 1:
-                    steps_stop = idx
-                    break
-        self.context = [s for s in steps if s]
+        self.context = Parser.parse(tuple(ctx), self.build_section)

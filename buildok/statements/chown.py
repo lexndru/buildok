@@ -22,7 +22,7 @@ from pwd import getpwnam
 from grp import getgrnam
 from os import chown, getcwd
 
-def change_own(owner="", group="", path=None):
+def change_own(owner="", group="", path=None, *args, **kwargs):
     r"""Change owner and group on file or directory.
 
     Args:

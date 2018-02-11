@@ -20,7 +20,7 @@
 
 from subprocess import check_output, CalledProcessError, STDOUT
 
-def exec_shell(cmd=None):
+def exec_shell(cmd=None, *args, **kwargs):
     r"""Run a command in shell.
 
     Args:

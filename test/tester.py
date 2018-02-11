@@ -35,15 +35,18 @@ class Tester(object):
 
     @classmethod
     def scan(cls):
-        imports = []
+        imports, ctx = [], []
         with open(cls.STATEMENT_PY) as file_:
-            for line in file_.readlines():
-                if not line.startswith("from"):
-                    continue
-                result = cls.IMPORT_PATTERN.match(line)
-                statement = result.group("stmt").strip()
-                module = result.group("mod").strip()
-                imports.append((module, statement))
+            ctx = file_.readlines()
+        for line in ctx:
+            if not line.startswith("from"):
+                continue
+            result = cls.IMPORT_PATTERN.match(line)
+            if result is None:
+                continue
+            statement = result.group("stmt").strip()
+            module = result.group("mod").strip()
+            imports.append((module, statement))
         return imports
 
     @classmethod
@@ -53,12 +56,13 @@ class Tester(object):
         if not hasattr(mod, func):
             raise ImportError
         test = getattr(mod, func)
-        steps = Statement.parse_func(test, tin)
-        expected = Statement.parse_func(test, tout)
+        test_doc = test.__doc__.split("\n")
+        steps = Parser.parse(test_doc, [tin])
+        if not Parser.all_valid(steps):
+            raise ImportError
+        expected = Parser.parse(test_doc, [tout])
         pr = Parser(tuple(steps))
         pr.prepare()
-        if not all([pr.is_valid(s) for s in steps]):
-            raise ImportError
         return pr, test, expected
 
     @classmethod
@@ -75,7 +79,8 @@ class Tester(object):
             while pr.has_step():
                 step = pr.get_step()
                 print("[Test]  ", step)
-                output = Statement.parse(step)
+                stmt = Statement(step)
+                output = stmt.run()
                 if output is None:
                     raise Exception("Unexpected statement '%s', maybe misspeled" % step)
             assert output == expected, "Expected '%s' got '%s'" % (expected, output)

@@ -20,7 +20,7 @@
 
 from os import makedirs
 
-def make_dir(path=None):
+def make_dir(path=None, *args, **kwargs):
     r"""Make a directory or make recursive directories.
 
     Args:
