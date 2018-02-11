@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Copyright 2018 Alexandru Catrina
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,43 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from shutil import move
+from test.tester import main
 
-def move_files(src=None, dst=None):
-    r"""Move files from a given source to a given destination.
-
-    Args:
-        src (str): Source of files.
-        dst (str): Target destination of files.
-
-    Retuns:
-        str: Status of move.
-
-    Raises:
-        OSError: If an invalid `src` or `dst` is provided.
-
-    Accepted statements:
-        ^move from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-        ^move `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
-        ^rename `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-    """
-    try:
-        move(src, dst)
-        return "Moved %s => %s" % (src, dst)
-    except OSError as e:
-        raise e
-    return "Nothing to move"
-
-
-def move_files_test(*args, **kwargs):
-    """Test if it's possible to move files.
-
-    Build steps:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder_move`.
-        3) Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
-
-    Expected:
-        Moved buildok_test_folder_move => buildok_test_folder_moved
-    """
-    pass
+if __name__ == "__main__":
+    main()

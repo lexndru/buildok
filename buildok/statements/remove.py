@@ -28,7 +28,7 @@ def remove_files(src=None):
         src (str): Source of files.
 
     Retuns:
-        bool: True on success, otherwise False.
+        str: Human readable descriptor message or error.
 
     Raises:
         OSError: If an invalid `src` is provided.
@@ -36,13 +36,30 @@ def remove_files(src=None):
     Accepted statements:
         ^remove from `(?P<src>.+)`[\.\?\!]$
         ^remove `(?P<src>.+)` files[\.\?\!]$
+        ^remove file `(?P<src>.+)`[\.\?\!]$
+        ^remove directory `(?P<src>.+)`[\.\?\!]$
+        ^remove folder `(?P<src>.+)`[\.\?\!]$
     """
     try:
         if path.isfile(src):
             remove(src)
         elif path.isdir(src):
             rmtree(src)
-        return True
+        return "Removed %s" % src
     except OSError as e:
         raise e
-    return False
+    return "Nothing to remove"
+
+
+def remove_files_test(*args, **kwargs):
+    """Test if it's possible to remove files.
+
+    Build steps:
+        1) Go to `/tmp`.
+        2) Run `touch buildok_test_tmp.txt`.
+        3) Remove file `buildok_test_tmp.txt`.
+
+    Expected:
+        Removed buildok_test_tmp.txt
+    """
+    pass

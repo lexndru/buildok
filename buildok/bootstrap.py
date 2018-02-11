@@ -34,13 +34,20 @@ def setup():
 
     Raises:
         SystemExit: If any error occurs while parsing command line arguments.
+
+    Return:
+        bool: True if setup is done, otherwise False.
     """
     args = Shell.parse()
+    Console.verbose = args.verbose
+    if args.analyze:
+        [Console.log(s) for s in Statement.analyze()]
+        return None
     if args.project is not None:
         Reader.filepath = args.project
-    Console.verbose = args.verbose
-    if args.generate is not None:
-        Console.fatal("Generate flag is not supported at this moment")
+    if args.convert is not None:
+        Console.fatal("Convert flag is not supported at this moment")
+    return True
 
 def read(first=True):
     """Read all posible sources.
@@ -51,18 +58,22 @@ def read(first=True):
     Return:
         tuple: Returns build steps.
     """
-    rr = ReadmeReader()
-    if not rr.exists():
-        fr = FileReader()
-        if not fr.exists():
+    fr = FileReader()
+    if not fr.exists():
+        rr = ReadmeReader()
+        if not rr.exists():
             raise Console.fatal("Nothing to build from...")
         else:
-            Console.info("Building from file")
+            Console.info("Building from README")
     else:
-        Console.info("Building from README")
+        Console.info("Building from file")
+    pr = Parser(())
     steps = Reader.get_first() if first else Reader.get_all()
     for s in steps:
-        Console.info("  %s" % s)
+        if pr.is_valid(s):
+            Console.info("  %s" % s)
+        else:
+            Console.warn("  %s <--- bad grammar" % s)
     return steps
 
 
@@ -90,8 +101,12 @@ def run(steps, last_step="n/a"):
 
 @timeit_log
 def main():
-    setup()
+    if not setup():
+        return
     steps = read()
     if len(steps) == 0:
         raise Console.fatal("Nothing to build")
-    run(steps)
+    try:
+        run(steps)
+    except Exception as e:
+        raise Console.fatal(e)

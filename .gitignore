@@ -5,3 +5,4 @@
 *.pyo
 buildok_app
 .build
+.notes

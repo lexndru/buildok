@@ -1,0 +1,12 @@
+1) Run `pwd`!
+2) Go to `/tmp`!
+3) Run `pwd`!
+4) Remove folder `/tmp/testingbuildok123`.
+5) Create folder `/tmp/testingbuildok123`.
+6) Go to `/tmp/testingbuildok123`!
+7) Run `touch file.txt`.
+8) Run `ls -l`.
+9) Rename `file.txt` to `sample.txt`.
+10) Run `ls -lh`.
+11) Open link `https://github.com/lexndru/buildok`.
+12) Run `echo Hello, friendly world`.

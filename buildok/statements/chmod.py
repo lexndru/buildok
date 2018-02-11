@@ -18,43 +18,48 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from shutil import move
+from os import chmod, getcwd
 
-def move_files(src=None, dst=None):
-    r"""Move files from a given source to a given destination.
+def change_mod(mode="400", path=None):
+    r"""Change permissions on file or directory.
 
     Args:
-        src (str): Source of files.
-        dst (str): Target destination of files.
+        mode (str): Octal integer permissions.
+        path (str): Path to file or directory.
 
     Retuns:
-        str: Status of move.
+        str: Human readable descriptor message or error.
 
     Raises:
-        OSError: If an invalid `src` or `dst` is provided.
+        OSError: If an invalid `path` is provided.
+        TypeError: If an invalid `mode` is provided.
 
     Accepted statements:
-        ^move from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-        ^move `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
-        ^rename `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
+        ^change permissions to `(?P<mode>.+)`[\.\?\!]$
+        ^change permissions to `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
+        ^change permissions `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
+        ^set permissions to `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
     """
     try:
-        move(src, dst)
-        return "Moved %s => %s" % (src, dst)
+        if path is None:
+            path = getcwd()
+        chmod(path, int(mode, 8))
+        return "Changed permissions %s => %s" % (mode, path)
     except OSError as e:
         raise e
-    return "Nothing to move"
+    except TypeError as e:
+        raise e
+    return "Nothing to do"
 
 
-def move_files_test(*args, **kwargs):
-    """Test if it's possible to move files.
+def change_mod_test(*args, **kwargs):
+    """Test if it's possible to change permissions.
 
     Build steps:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder_move`.
-        3) Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
+        1) Run `touch /tmp/buildok_test.txt`.
+        2) Set permissions to `400` for `/tmp/buildok_test.txt`.
 
     Expected:
-        Moved buildok_test_folder_move => buildok_test_folder_moved
+        Changed permissions 400 => /tmp/buildok_test.txt
     """
     pass

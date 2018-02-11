@@ -1,5 +1,6 @@
 CWD=$(shell pwd)
 SRCDIR=buildok
+TESTDIR=test
 
 .PHONY: all clean build
 
@@ -12,3 +13,4 @@ build:
 
 clean:
 	find $(SRCDIR) -regextype posix-extended -regex ".*.pyc" -type f -delete
+	find $(TESTDIR) -regextype posix-extended -regex ".*.pyc" -type f -delete

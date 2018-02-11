@@ -18,43 +18,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from shutil import move
+import webbrowser as wb
 
-def move_files(src=None, dst=None):
-    r"""Move files from a given source to a given destination.
+def exec_web(url=None):
+    r"""Open a link in default browser.
 
     Args:
-        src (str): Source of files.
-        dst (str): Target destination of files.
+        url (str): URL to open.
 
     Retuns:
-        str: Status of move.
+        str: Output as string.
 
     Raises:
-        OSError: If an invalid `src` or `dst` is provided.
+        TypeError: If an invalid `url` is provided.
 
     Accepted statements:
-        ^move from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-        ^move `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
-        ^rename `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
+        ^open in browser `(?P<url>.+)`[\.\?\!]$
+        ^open link `(?P<url>.+)`[\.\?\!]$
+        ^open url `(?P<url>.+)`[\.\?\!]$
     """
     try:
-        move(src, dst)
-        return "Moved %s => %s" % (src, dst)
-    except OSError as e:
+        wb.get().open(url, new=2)
+        return "Opened URL in browser => %s" % url
+    except TypeError as e:
         raise e
-    return "Nothing to move"
+    return "Nothing to do"
 
 
-def move_files_test(*args, **kwargs):
-    """Test if it's possible to move files.
-
-    Build steps:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder_move`.
-        3) Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
-
-    Expected:
-        Moved buildok_test_folder_move => buildok_test_folder_moved
-    """
-    pass
+# def exec_web_test(*args, **kwargs):
+#     """Test if it's possible to open a link in a browser.
+#
+#     Build steps:
+#         1) Open link `https://github.com/lexndru/buildok`.
+#
+#     Expected:
+#         Opened URL in browser => https://github.com/lexndru/buildok
+#     """
+#     pass

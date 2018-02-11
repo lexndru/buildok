@@ -34,6 +34,15 @@ class Console(object):
     verbose = False
 
     @classmethod
+    def log(cls, message=None):
+        """Print log message.
+
+        Args:
+            message (str): Optional message to display.
+        """
+        print("[Log] %s" % message)
+
+    @classmethod
     def start(cls, message=None):
         """Start console timer.
 
@@ -57,6 +66,16 @@ class Console(object):
         print("\033[92m\033[1m[Build] OK (runtime %ss)\033[0m" % (cls.stop_time - cls.start_time))
 
     @classmethod
+    def warn(cls, message):
+        """Console simple warn message.
+
+        Args:
+            message (str): Message to display.
+        """
+        if cls.verbose:
+            print(u"\033[93m[Build] %s\033[0m" % message)
+
+    @classmethod
     def info(cls, message):
         """Console simple info message.
 
@@ -64,7 +83,7 @@ class Console(object):
             message (str): Message to display.
         """
         if cls.verbose:
-            print(u"\033[92m[Build] %s\033[0m" % str(message))
+            print(u"\033[92m[Build] %s\033[0m" % message)
 
     @classmethod
     def eval(cls, message):
@@ -74,7 +93,7 @@ class Console(object):
             message (str): Message to display.
         """
         if cls.verbose:
-            print(u"\033[93m[Yield] %s\033[0m" % str(message))
+            print(u"\033[93m[Yield] %s\033[0m" % message)
 
     class fatal(SystemExit):
         """Console fatal error message.
@@ -83,7 +102,7 @@ class Console(object):
             err (str): Error to display.
         """
         def __init__(self, err):
-            error = u"\033[91m[Fatal] %s\033[0m" % str(err)
+            error = u"\033[91m[Fatal] %s\033[0m" % unicode(err)
             super(self.__class__, self).__init__(error)
 
     class debug(Exception):
@@ -93,7 +112,7 @@ class Console(object):
             err (str): Error to display.
         """
         def __init__(self, err):
-            error = u"\033[93m[Error] %s\033[0m" % str(err)
+            error = u"\033[93m[Error] %s\033[0m" % unicode(err)
             super(self.__class__, self).__init__(error)
 
 

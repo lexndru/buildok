@@ -18,43 +18,44 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from shutil import move
+from os import symlink, getcwd
 
-def move_files(src=None, dst=None):
-    r"""Move files from a given source to a given destination.
+def make_symlink(src=None, dst=None):
+    r"""Make a directory or make recursive directories.
 
     Args:
         src (str): Source of files.
-        dst (str): Target destination of files.
+        dst (str): Target destination of symlink.
 
     Retuns:
-        str: Status of move.
+        str: Human readable descriptor message or error.
 
     Raises:
-        OSError: If an invalid `src` or `dst` is provided.
+        OSError: If an invalid `src` or `dst` is provided or if `dst` already exists.
 
     Accepted statements:
-        ^move from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-        ^move `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
-        ^rename `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
+        ^create symlink from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
+        ^make symlink `(?P<dst>.+)` from `(?P<src>.+)`[\.\?\!]$
+        ^make symlink `(?P<dst>.+)`[\.\?\!]$
     """
     try:
-        move(src, dst)
-        return "Moved %s => %s" % (src, dst)
+        if src is None:
+            src = getcwd()
+        symlink(src, dst)
+        return "Created symlink %s => %s" % (src, dst)
     except OSError as e:
         raise e
-    return "Nothing to move"
+    return "Nothing to do"
 
 
-def move_files_test(*args, **kwargs):
-    """Test if it's possible to move files.
+def make_symlink_test(*args, **kwargs):
+    """Test if it's possible to create a symlink.
 
     Build steps:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder_move`.
-        3) Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
+        1) Run `touch buildok_test_symlink`.
+        2) Make symlink `buildok_test_symlink_ok` from `buildok_test_symlink`.
 
     Expected:
-        Moved buildok_test_folder_move => buildok_test_folder_moved
+        Created symlink buildok_test_symlink => buildok_test_symlink_ok
     """
     pass

@@ -18,43 +18,54 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from shutil import move
+from os import kill
+from signal import SIGTERM
+from subprocess import check_output, CalledProcessError
 
-def move_files(src=None, dst=None):
-    r"""Move files from a given source to a given destination.
+def kill_proc(pid=None, pname=None):
+    r"""Send SIGTERM signal to a process.
 
     Args:
-        src (str): Source of files.
-        dst (str): Target destination of files.
+        pid (int): Process ID.
+        pname (str): Process name.
 
     Retuns:
-        str: Status of move.
+        str: Human readable descriptor message or error.
 
     Raises:
-        OSError: If an invalid `src` or `dst` is provided.
+        OSError: If an invalid `pid` or `pname` is provided.
+        CalledProcessError: If `pname` is not found.
 
     Accepted statements:
-        ^move from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-        ^move `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
-        ^rename `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
+        ^kill process `(?P<pname>.+)`[\.\?\!]$
+        ^kill pid `(?P<pid>.+)`[\.\?\!]$
+        ^stop process `(?P<pname>.+)`[\.\?\!]$
+        ^stop pid `(?P<pid>.+)`[\.\?\!]$
+        ^nothing to do[\.\?\!]$
     """
     try:
-        move(src, dst)
-        return "Moved %s => %s" % (src, dst)
+        if pname is not None:
+            pid = check_output(["pidof", "-s", name])
+        if pid is None:
+            raise ValueError
+        kill(int(pid), SIGTERM)
+        return "Terminated process PID => %s" % pid
     except OSError as e:
         raise e
-    return "Nothing to move"
+    except CalledProcessError as e:
+        raise e
+    except ValueError:
+        return "Nothing to do"
+    return "Nothing to do"
 
 
-def move_files_test(*args, **kwargs):
-    """Test if it's possible to move files.
+def kill_proc_test(*args, **kwargs):
+    """Test if it's possible to kill a process.
 
     Build steps:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder_move`.
-        3) Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
+        1) Nothing to do.
 
     Expected:
-        Moved buildok_test_folder_move => buildok_test_folder_moved
+        Nothing to do
     """
     pass

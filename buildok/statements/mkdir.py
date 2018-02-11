@@ -18,43 +18,42 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from shutil import move
+from os import makedirs
 
-def move_files(src=None, dst=None):
-    r"""Move files from a given source to a given destination.
+def make_dir(path=None):
+    r"""Make a directory or make recursive directories.
 
     Args:
-        src (str): Source of files.
-        dst (str): Target destination of files.
+        path (str): Path to directory.
 
     Retuns:
-        str: Status of move.
+        str: Human readable descriptor message or error.
 
     Raises:
-        OSError: If an invalid `src` or `dst` is provided.
+        OSError: If an invalid `path` is provided or if path already exists.
 
     Accepted statements:
-        ^move from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-        ^move `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
-        ^rename `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
+        ^create folder `(?P<path>.+)`[\.\?\!]$
+        ^create directory `(?P<path>.+)`[\.\?\!]$
+        ^make new folder `(?P<path>.+)`[\.\?\!]$
+        ^make new directory `(?P<path>.+)`[\.\?\!]$
     """
     try:
-        move(src, dst)
-        return "Moved %s => %s" % (src, dst)
+        makedirs(path)
+        return "Created new directory => %s" % path
     except OSError as e:
         raise e
-    return "Nothing to move"
+    return "Nothing to do"
 
 
-def move_files_test(*args, **kwargs):
-    """Test if it's possible to move files.
+def make_dir_test(*args, **kwargs):
+    """Test if it's possible to create folders.
 
     Build steps:
         1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder_move`.
-        3) Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
+        2) Create folder `buildok_test_folder`.
 
     Expected:
-        Moved buildok_test_folder_move => buildok_test_folder_moved
+        Created new directory => buildok_test_folder
     """
     pass
