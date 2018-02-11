@@ -20,7 +20,7 @@ setup(name="buildok",
     author_email="alex@codeissues.net",
     license="MIT",
     url="https://github.com/lexndru/buildok",
-    download_url="https://github.com/lexndru/buildok/archive/v0.1.tar.gz",
+    download_url="https://github.com/lexndru/buildok/archive/v0.2.tar.gz",
     keywords=[
         "build-tool",
         "build-automation",

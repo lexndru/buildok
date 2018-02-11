@@ -1,0 +1,11 @@
+language: python
+
+go:
+  - 2.7
+
+git:
+  depth: 3
+
+script:
+  - python test.py
+  - python build.py -a
