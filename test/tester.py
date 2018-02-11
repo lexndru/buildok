@@ -47,24 +47,35 @@ class Tester(object):
         return imports
 
     @classmethod
-    def run_test(cls, imports, *args):
-        module, func = imports
+    def launch_test(cls, module, func):
         tin, tout = cls.TEST_INPUT_OUTPUT
+        mod = import_module(module)
+        if not hasattr(mod, func):
+            raise ImportError
+        test = getattr(mod, func)
+        steps = Statement.parse_func(test, tin)
+        expected = Statement.parse_func(test, tout)
+        pr = Parser(tuple(steps))
+        pr.prepare()
+        return pr, test, expected
+
+    @classmethod
+    def run_test(cls, imports):
+        module, func = imports
+        output = "n/a"
         try:
-            mod = import_module(module)
-            if not hasattr(mod, func):
-                raise ImportError
-            test = getattr(mod, func)
-            steps = Statement.parse_func(test, tin)
-            pr = Parser(tuple(steps))
-            pr.prepare()
-            step = pr.get_step()
-            expected = Statement.parse_func(test, tout)
-            output = Statement.parse(step)
+            pr, test, expected = cls.launch_test(module, func)
             if len(expected) != 1:
                 raise Exception("Incomplete or invalid test: no expectations")
             else:
                 expected = expected[0]
+            print("[Test] Running tests on %s" % module)
+            while pr.has_step():
+                step = pr.get_step()
+                print("[Test]  ", step)
+                output = Statement.parse(step)
+                if output is None:
+                    raise Exception("Unexpected statement '%s', maybe misspeled" % step)
             assert output == expected, "Expected '%s' got '%s'" % (expected, output)
             print(u"[Test] \033[92mPassed OK %s\033[0m" % module)
         except ImportError:
@@ -73,6 +84,7 @@ class Tester(object):
             print(u"[Test] \033[101mFailed %s: %s\033[0m" % (module, e))
         except Exception as e:
             print(u"[Test] \033[91mError %s: %s\033[0m" % (module, e))
+        print("[Test]", "-" * 50)
 
 def main():
     for t in Tester.scan():

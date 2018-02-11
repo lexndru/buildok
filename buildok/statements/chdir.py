@@ -52,4 +52,4 @@ def change_dir_test(*args, **kwargs):
     Expected:
         Changed directory to /tmp
     """
-    return change_dir(*args, **kwargs)
+    pass

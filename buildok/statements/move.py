@@ -44,3 +44,17 @@ def move_files(src=None, dst=None):
     except OSError as e:
         raise e
     return "Nothing to move"
+
+
+def move_files_test(*args, **kwargs):
+    """Test if it's possible to move files.
+
+    Build steps:
+        1) Go to `/tmp`.
+        2) Create folder `buildok_test_folder_move`.
+        3) Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
+
+    Expected:
+        Moved buildok_test_folder_move => buildok_test_folder_moved
+    """
+    pass

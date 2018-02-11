@@ -22,7 +22,7 @@ from pwd import getpwnam
 from grp import getgrnam
 from os import chown, getcwd
 
-def change_own(owner=None, group=None, path=None):
+def change_own(owner="", group="", path=None):
     r"""Change owner and group on file or directory.
 
     Args:
@@ -38,15 +38,17 @@ def change_own(owner=None, group=None, path=None):
 
     Accepted statements:
         ^change file owner to `(?P<owner>.+)` on `(?P<path>.+)`[\.\?\!]$
+        ^change owner to `(?P<owner>.+)` on `(?P<path>.+)`[\.\?\!]$
         ^change user to `(?P<owner>.+)` on `(?P<path>.+)`[\.\?\!]$
         ^change user and group to `(?P<owner>.+):(?P<group>.+)`[\.\?\!]$
+        ^set owner and group `(?P<owner>.+):(?P<group>.+)` for `(?P<path>.+)`[\.\?\!]$
     """
     try:
-        if owner is not None:
+        if owner != "":
             uid = getpwnam(owner).pw_uid
         else:
             uid = -1
-        if group is not None:
+        if group != "":
             gid = getgrnam(group).gr_gid
         else:
             gid = -1
@@ -57,3 +59,16 @@ def change_own(owner=None, group=None, path=None):
     except OSError as e:
         raise e
     return "Nothing to do"
+
+
+def change_own_test(*args, **kwargs):
+    """Test if it's possible to change owner and group.
+
+    Build steps:
+        1) Run `touch /tmp/buildok_test.txt`.
+        2) Change owner to `nobody` on `/tmp/buildok_test.txt`.
+
+    Expected:
+        Changed owner and group nobody: => /tmp/buildok_test.txt
+    """
+    pass

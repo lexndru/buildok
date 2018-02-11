@@ -36,14 +36,14 @@ def change_mod(mode="400", path=None):
 
     Accepted statements:
         ^change permissions to `(?P<mode>.+)`[\.\?\!]$
+        ^change permissions to `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
         ^change permissions `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
         ^set permissions to `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
     """
     try:
-        mode = oct(int("0%s" % mode, 8))
         if path is None:
             path = getcwd()
-        chmod(path, mode)
+        chmod(path, int(mode, 8))
         return "Changed permissions %s => %s" % (mode, path)
     except OSError as e:
         raise e
@@ -57,9 +57,9 @@ def change_mod_test(*args, **kwargs):
 
     Build steps:
         1) Run `touch /tmp/buildok_test.txt`.
-        2) Change permissions to `400` for `/tmp/buildok_test.txt`.
+        2) Set permissions to `400` for `/tmp/buildok_test.txt`.
 
     Expected:
         Changed permissions 400 => /tmp/buildok_test.txt
     """
-    return change_mod(*args, **kwargs)
+    pass

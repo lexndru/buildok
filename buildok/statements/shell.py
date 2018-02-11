@@ -42,3 +42,15 @@ def exec_shell(cmd=None):
     if output is None:
         return "n/a"
     return output.decode('utf-8').strip()
+
+
+def exec_shell_test(*args, **kwargs):
+    """Test if it's possible to execute a shell command.
+
+    Build steps:
+        1) Run `echo hello friend how are you`.
+
+    Expected:
+        hello friend how are you
+    """
+    pass

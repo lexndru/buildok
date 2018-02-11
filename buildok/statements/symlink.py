@@ -46,3 +46,16 @@ def make_symlink(src=None, dst=None):
     except OSError as e:
         raise e
     return "Nothing to do"
+
+
+def make_symlink_test(*args, **kwargs):
+    """Test if it's possible to create a symlink.
+
+    Build steps:
+        1) Run `touch buildok_test_symlink`.
+        2) Make symlink `buildok_test_symlink_ok` from `buildok_test_symlink`.
+
+    Expected:
+        Created symlink buildok_test_symlink => buildok_test_symlink_ok
+    """
+    pass

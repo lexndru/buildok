@@ -41,6 +41,7 @@ def kill_proc(pid=None, pname=None):
         ^kill pid `(?P<pid>.+)`[\.\?\!]$
         ^stop process `(?P<pname>.+)`[\.\?\!]$
         ^stop pid `(?P<pid>.+)`[\.\?\!]$
+        ^nothing to do[\.\?\!]$
     """
     try:
         if pname is not None:
@@ -48,9 +49,23 @@ def kill_proc(pid=None, pname=None):
         if pid is None:
             raise ValueError
         kill(int(pid), SIGTERM)
-        return "Terminated process PID => %d" % pid
+        return "Terminated process PID => %s" % pid
     except OSError as e:
         raise e
     except CalledProcessError as e:
         raise e
+    except ValueError:
+        return "Nothing to do"
     return "Nothing to do"
+
+
+def kill_proc_test(*args, **kwargs):
+    """Test if it's possible to kill a process.
+
+    Build steps:
+        1) Nothing to do.
+
+    Expected:
+        Nothing to do
+    """
+    pass

@@ -39,6 +39,7 @@ def copy_files(src=None, dst=None):
     Accepted statements:
         ^copy from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
         ^copy `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
+        ^copy `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
     """
     files, folders = 0, 0
     for item in glob(src):
@@ -48,4 +49,17 @@ def copy_files(src=None, dst=None):
         elif path.isdir(item):
             copy_tree(item, dst)
             folders += 1
-    return "Copied %d files and %d folders" % (files, folders)
+    return "Copied %d file(s) and %d folder(s)" % (files, folders)
+
+
+def copy_files_test(*args, **kwargs):
+    """Test if it's possible to copy a file.
+
+    Build steps:
+        1) Run `touch /tmp/buildok_test_copy.txt`.
+        2) Copy `/tmp/buildok_test_copy.txt` to `/tmp/buildok_test_copy2.txt`.
+
+    Expected:
+        Copied 1 file(s) and 0 folder(s)
+    """
+    pass

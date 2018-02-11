@@ -43,3 +43,15 @@ def exec_web(url=None):
     except TypeError as e:
         raise e
     return "Nothing to do"
+
+
+# def exec_web_test(*args, **kwargs):
+#     """Test if it's possible to open a link in a browser.
+#
+#     Build steps:
+#         1) Open link `https://github.com/lexndru/buildok`.
+#
+#     Expected:
+#         Opened URL in browser => https://github.com/lexndru/buildok
+#     """
+#     pass

@@ -36,6 +36,7 @@ def remove_files(src=None):
     Accepted statements:
         ^remove from `(?P<src>.+)`[\.\?\!]$
         ^remove `(?P<src>.+)` files[\.\?\!]$
+        ^remove file `(?P<src>.+)`[\.\?\!]$
         ^remove directory `(?P<src>.+)`[\.\?\!]$
         ^remove folder `(?P<src>.+)`[\.\?\!]$
     """
@@ -48,3 +49,17 @@ def remove_files(src=None):
     except OSError as e:
         raise e
     return "Nothing to remove"
+
+
+def remove_files_test(*args, **kwargs):
+    """Test if it's possible to remove files.
+
+    Build steps:
+        1) Go to `/tmp`.
+        2) Run `touch buildok_test_tmp.txt`.
+        3) Remove file `buildok_test_tmp.txt`.
+
+    Expected:
+        Removed buildok_test_tmp.txt
+    """
+    pass

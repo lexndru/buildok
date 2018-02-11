@@ -44,3 +44,16 @@ def make_dir(path=None):
     except OSError as e:
         raise e
     return "Nothing to do"
+
+
+def make_dir_test(*args, **kwargs):
+    """Test if it's possible to create folders.
+
+    Build steps:
+        1) Go to `/tmp`.
+        2) Create folder `buildok_test_folder`.
+
+    Expected:
+        Created new directory => buildok_test_folder
+    """
+    pass
