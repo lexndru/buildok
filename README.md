@@ -1,7 +1,7 @@
 # Buildok
-A tool to automate build steps from README files.
-
 [![Build Status](https://travis-ci.org/lexndru/buildok.svg?branch=master)](https://travis-ci.org/lexndru/buildok)
+
+A tool to automate build steps from README files.
 
 ## Getting started
 There are two possible ways to make use of this tool. You either create a file named `.build` and write each step on a line;
