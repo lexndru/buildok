@@ -18,13 +18,42 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from converters.bash import unpack_bash
+
+
 class Converter(object):
 
-    @classmethod
-    def prepare(cls, target):
-        print "===", target
+    target, statements = None, None
 
     @classmethod
-    def save(cls, statements):
-        for s in statements:
-            print s
+    def prepare(cls, target, statement):
+        if target == "bash":
+            cls.target = unpack_bash()
+        elif target == "vagrant":
+            raise Exception("Unsupported yet: %s" % target)
+        elif target == "docker":
+            raise Exception("Unsupported yet: %s" % target)
+        elif target == "jenkins":
+            raise Exception("Unsupported yet: %s" % target)
+        elif target == "ansible":
+            raise Exception("Unsupported yet: %s" % target)
+        else:
+            raise Exception("Unsupported target: %s" % target)
+        cls.statements = statement.statements
+
+    @classmethod
+    def check(cls):
+        return cls.target is not None and len(cls.statements) > 0
+
+    @classmethod
+    def save(cls, lines=[]):
+        lang, fname, template = cls.target
+        for s in cls.statements:
+            func = lang.get(s.stmt.__name__)
+            if not callable(func):
+                continue
+            lines.append(func(**s.args))
+        with open(fname, "w") as file_:
+            data = template.format(lang="\n".join(lines))
+            file_.write(data)
+        return "Converted %d steps to %s file" % (len(lines), fname)

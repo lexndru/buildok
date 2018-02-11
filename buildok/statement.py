@@ -109,36 +109,3 @@ class Statement(object):
             statement_header = self.statement_header
         lines = func.__doc__.split("\n")
         return Parser.parse(tuple(lines), [statement_header], test=test)
-
-    @classmethod
-    def analyze(cls):
-        """Analyze all statements.
-
-        Returns:
-            list: List of all statements including duplicated.
-        """
-        results, stmts = [], set([])
-        for idx1, func in enumerate(cls.known_actions):
-            class_ = func.__name__
-            lines = func.__doc__.split("\n")
-            funcs = Parser.parse(lines, [cls.statement_header], False)
-            for idx2, stmt in enumerate(funcs):
-                status = "duplicated" if stmt in stmts else "ok"
-                line = ("%d.%d" % (idx1+1, idx2+1), class_, stmt, status)
-                results.append(line)
-                stmts.add(stmt)
-        set_max = lambda o, s: len(s) if len(s) > o else o
-        ids_max_len, grp_max_len, stmt_max_len, status_max_len = 0, 0, 0, 0
-        for ids, grp, stmt, status in results:
-            ids_max_len, grp_max_len = set_max(ids_max_len, ids), set_max(grp_max_len, grp)
-            stmt_max_len, status_max_len = set_max(stmt_max_len, stmt), set_max(status_max_len, status)
-        line = "| %-" + str(ids_max_len) + "s | %-" + str(grp_max_len) + "s | "
-        line += "%-" + str(stmt_max_len) + "s | %-" + str(status_max_len) + "s |"
-        header = line % ("", "Group", "Statement", "")
-        sep = "-" * len(header)
-        lines = [header, sep]
-        for r in results:
-            color = "\033[101m" if r[-1] == "duplicated" else "\033[94m"
-            lines.append((color + line + "\033[0m") % r)
-        lines.append(sep)
-        return lines

@@ -27,6 +27,7 @@ from buildok.readers.read_me import ReadmeReader
 
 from buildok.util.console import Console, timeit_log
 from buildok.util.shell import Shell
+from buildok.util.analyze import analyze
 
 from converter import Converter
 
@@ -43,12 +44,12 @@ def setup():
     args = Shell.parse()
     Console.verbose = args.verbose
     if args.analyze:
-        [Console.log(s) for s in Statement.analyze()]
+        [Console.log(s) for s in analyze(Statement)]
         return None
     if args.project is not None:
         Reader.filepath = args.project
     if args.convert is not None:
-        Converter.prepare(args.convert)
+        Converter.prepare(args.convert, Statement)
     return True
 
 def read(first=True):
@@ -100,7 +101,7 @@ def run(steps, last_step="n/a"):
         results = stmt.run()
         Console.eval(results)
         last_step = step
-    Converter.save(Statement.statements)
+    Converter.check() and Converter.save()
 
 @timeit_log
 def main():
