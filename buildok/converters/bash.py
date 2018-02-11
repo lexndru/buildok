@@ -99,5 +99,5 @@ def unpack_bash():
     }
     return lang, "bash.sh", """#!/bin/bash
 
-{lang}
+{}
 """

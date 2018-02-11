@@ -18,12 +18,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import os
+
 from converters.bash import unpack_bash
 from util.console import Console
 
 
 class Converter(object):
+    """Translate build steps to script files.
 
+    Used as a converter wrapper for multiple scriping files.
+
+    Args:
+        workdir (str): Working directory.
+        target (tuple): Unpacked holder for script parameters.
+        statements (frozenset): Set of all known statements.
+    """
+    workdir = os.getcwd()
     target, statements = None, None
 
     @classmethod
@@ -54,8 +65,7 @@ class Converter(object):
             if not callable(func):
                 continue
             lines.append(func(**s.args))
-        with open(fname, "w") as file_:
-            data = template.format(lang="\n".join(lines))
-            print data
+        with open(os.path.join(cls.workdir, fname), "w") as file_:
+            data = template.format("\n".join(lines))
             file_.write(data)
         Console.info("Converted %d steps to %s file" % (len(lines), fname))
