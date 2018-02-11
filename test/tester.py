@@ -57,6 +57,8 @@ class Tester(object):
         expected = Statement.parse_func(test, tout)
         pr = Parser(tuple(steps))
         pr.prepare()
+        if not all([pr.is_valid(s) for s in steps]):
+            raise ImportError
         return pr, test, expected
 
     @classmethod

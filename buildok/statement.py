@@ -130,10 +130,16 @@ class Statement(object):
                 newlines.append(idx)
             if start_line == -1 and statement_header in line.lower():
                 start_line = idx
-        if len(lines) - 1 == newlines[-1]:
-            newlines.pop()
-        if len(newlines) > 0 and newlines[-1] > start_line:
-            rows = lines[1 + start_line:newlines[-1]]
+        if len(newlines) > 0:
+            stop = -1
+            for i in newlines:
+                if i > start_line:
+                    stop = i
+                    break
+            if stop > start_line:
+                rows = lines[1 + start_line:stop]
+            else:
+                rows = lines[1 + start_line:]
         else:
             rows = lines[1 + start_line:]
         return [l.strip() for l in rows if l.strip()]
