@@ -34,6 +34,12 @@ def change_dir(path=None):
 
     Accepted statements:
         ^go to `(?P<path>.+)`[\.\?\!]$
+
+    Sample input:
+        1) Go to `/tmp`.
+
+    Expected:
+        Changed directory to /tmp
     """
     try:
         chdir(path)
@@ -41,15 +47,3 @@ def change_dir(path=None):
     except OSError as e:
         raise e
     return "Nowhere to go"
-
-
-def change_dir_test(*args, **kwargs):
-    """Test if current working directory is being changed.
-
-    Build steps:
-        1) Go to `/tmp`.
-
-    Expected:
-        Changed directory to /tmp
-    """
-    pass

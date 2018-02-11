@@ -37,19 +37,8 @@ def move_files(src=None, dst=None):
         ^move from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
         ^move `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
         ^rename `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-    """
-    try:
-        move(src, dst)
-        return "Moved %s => %s" % (src, dst)
-    except OSError as e:
-        raise e
-    return "Nothing to move"
 
-
-def move_files_test(*args, **kwargs):
-    """Test if it's possible to move files.
-
-    Build steps:
+    Sample input:
         1) Go to `/tmp`.
         2) Create folder `buildok_test_folder_move`.
         3) Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
@@ -57,4 +46,9 @@ def move_files_test(*args, **kwargs):
     Expected:
         Moved buildok_test_folder_move => buildok_test_folder_moved
     """
-    pass
+    try:
+        move(src, dst)
+        return "Moved %s => %s" % (src, dst)
+    except OSError as e:
+        raise e
+    return "Nothing to move"

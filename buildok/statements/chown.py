@@ -42,6 +42,13 @@ def change_own(owner="", group="", path=None):
         ^change user to `(?P<owner>.+)` on `(?P<path>.+)`[\.\?\!]$
         ^change user and group to `(?P<owner>.+):(?P<group>.+)`[\.\?\!]$
         ^set owner and group `(?P<owner>.+):(?P<group>.+)` for `(?P<path>.+)`[\.\?\!]$
+
+    Sample (input):
+        1) Run `touch /tmp/buildok_test.txt`.
+        2) Change owner to `nobody` on `/tmp/buildok_test.txt`.
+
+    Expected:
+        Changed owner nobody => /tmp/buildok_test.txt
     """
     try:
         if owner != "":
@@ -55,20 +62,12 @@ def change_own(owner="", group="", path=None):
         if path is None:
             path = getcwd()
         chown(path, uid, gid)
-        return "Changed owner and group %s:%s => %s" % (owner, group, path)
+        if uid != -1 and gid == -1:
+            return "Changed owner %s => %s" % (owner, path)
+        elif uid == -1 and gid != -1:
+            return "Changed group %s => %s" % (group, path)
+        elif uid != -1 and gid != -1:
+            return "Changed ownwer:group %s:%s => %s" % (owner, group, path)
     except OSError as e:
         raise e
     return "Nothing to do"
-
-
-def change_own_test(*args, **kwargs):
-    """Test if it's possible to change owner and group.
-
-    Build steps:
-        1) Run `touch /tmp/buildok_test.txt`.
-        2) Change owner to `nobody` on `/tmp/buildok_test.txt`.
-
-    Expected:
-        Changed owner and group nobody: => /tmp/buildok_test.txt
-    """
-    pass

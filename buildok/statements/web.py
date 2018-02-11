@@ -36,6 +36,12 @@ def exec_web(url=None):
         ^open in browser `(?P<url>.+)`[\.\?\!]$
         ^open link `(?P<url>.+)`[\.\?\!]$
         ^open url `(?P<url>.+)`[\.\?\!]$
+
+    Sample (input):
+        1) Open link `https://github.com/lexndru/buildok`.
+
+    Expected:
+        Opened URL in browser => https://github.com/lexndru/buildok
     """
     try:
         wb.get().open(url, new=2)
@@ -43,15 +49,3 @@ def exec_web(url=None):
     except TypeError as e:
         raise e
     return "Nothing to do"
-
-
-# def exec_web_test(*args, **kwargs):
-#     """Test if it's possible to open a link in a browser.
-#
-#     Build steps:
-#         1) Open link `https://github.com/lexndru/buildok`.
-#
-#     Expected:
-#         Opened URL in browser => https://github.com/lexndru/buildok
-#     """
-#     pass

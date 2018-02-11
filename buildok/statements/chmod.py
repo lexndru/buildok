@@ -39,6 +39,13 @@ def change_mod(mode="400", path=None):
         ^change permissions to `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
         ^change permissions `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
         ^set permissions to `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
+
+    Sample input:
+        1) Run `touch /tmp/buildok_test.txt`.
+        2) Set permissions to `400` for `/tmp/buildok_test.txt`.
+
+    Expected:
+        Changed permissions 400 => /tmp/buildok_test.txt
     """
     try:
         if path is None:
@@ -50,16 +57,3 @@ def change_mod(mode="400", path=None):
     except TypeError as e:
         raise e
     return "Nothing to do"
-
-
-def change_mod_test(*args, **kwargs):
-    """Test if it's possible to change permissions.
-
-    Build steps:
-        1) Run `touch /tmp/buildok_test.txt`.
-        2) Set permissions to `400` for `/tmp/buildok_test.txt`.
-
-    Expected:
-        Changed permissions 400 => /tmp/buildok_test.txt
-    """
-    pass

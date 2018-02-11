@@ -31,7 +31,7 @@ class Tester(object):
     IMPORT_PATTERN = compile(r"^from\s+(?P<mod>buildok\.statements\.\w+)\s+import\s+(?P<stmt>\w+)$")
     STATEMENT_PY = "buildok/statement.py"
     STATEMENTS_MOD = "buildok.statements"
-    TEST_INPUT_OUTPUT = ("build steps", "expected")
+    TEST_INPUT_OUTPUT = ("sample input", "expected")
 
     @classmethod
     def scan(cls):
@@ -43,7 +43,7 @@ class Tester(object):
                 result = cls.IMPORT_PATTERN.match(line)
                 statement = result.group("stmt").strip()
                 module = result.group("mod").strip()
-                imports.append((module, "%s_test" % statement))
+                imports.append((module, statement))
         return imports
 
     @classmethod
