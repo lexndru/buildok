@@ -6,3 +6,5 @@
 buildok_app
 .build
 .notes
+/buildok.egg-info
+/dist
