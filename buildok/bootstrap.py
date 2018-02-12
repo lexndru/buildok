@@ -30,7 +30,7 @@ from buildok.util.shell import Shell
 from buildok.util.analyze import analyze
 from buildok.util.locker import lock, unlock
 
-from converter import Converter
+from buildok.converter import Converter
 
 
 def setup():

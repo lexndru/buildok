@@ -20,8 +20,8 @@
 
 import os
 
-from converters.bash import unpack_bash
-from util.console import Console
+from buildok.converters.bash import unpack_bash
+from buildok.util.console import Console
 
 
 class Converter(object):
