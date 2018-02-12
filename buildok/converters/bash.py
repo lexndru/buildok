@@ -70,7 +70,11 @@ def remove_files(src, flags=""):
         src = "."
     if os.path.isdir(src):
         flags = " -r"
-    return "rm%s %s" % (flags, src)
+    if flags == "":
+        flags = " -f"
+    else:
+        flags += "f"
+    return "rm%s %s 2> /dev/null" % (flags, src)
 
 
 def make_symlink(src, dst):

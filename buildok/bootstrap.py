@@ -28,6 +28,7 @@ from buildok.readers.read_me import ReadmeReader
 from buildok.util.console import Console, timeit_log
 from buildok.util.shell import Shell
 from buildok.util.analyze import analyze
+from buildok.util.locker import lock, unlock
 
 from converter import Converter
 
@@ -51,6 +52,7 @@ def setup():
     if args.convert is not None:
         Converter.prepare(args.convert, Statement)
     return True
+
 
 def read(first=True):
     """Read all posible sources.
@@ -103,14 +105,19 @@ def run(steps, last_step="n/a"):
         last_step = step
     Converter.check() and Converter.save()
 
+
 @timeit_log
 def main():
+    lock()
     if not setup():
-        return
+        return unlock()
     steps = read()
     if len(steps) == 0:
+        unlock()
         raise Console.fatal("Nothing to build")
     try:
         run(steps)
     except Exception as e:
+        unlock()
         raise Console.fatal(e)
+    return unlock()
