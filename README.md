@@ -8,6 +8,17 @@ There are two possible ways to make use of this tool. You either create a file n
 or write a new section in your `README.md` file starting with one of the following statements: "how to build ok" or "build ok steps".
 Each step you write has to respect the following pattern: `n) build step <punctuation>` where `n` is a number and `<punctuation>` is one of the following: `.`, `!` or `?`.
 
+#### Install
+```
+$ python setup.py install
+$ build -h
+```
+
+#### Run tests
+```
+$ python test.py
+```
+
 ## Supported statements
  - open link
  - copy files
