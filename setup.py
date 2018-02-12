@@ -8,19 +8,20 @@ setup(name="buildok",
         "buildok.readers",
         "buildok.statements",
         "buildok.util",
+        "buildok.converters",
     ],
     entry_points = {
         "console_scripts": [
             "build = buildok.bootstrap:main"
         ]
     },
-    version="0.2.3",
+    version="0.2.4",
     description="A tool to automate build steps from README files.",
     author="Alexandru Catrina",
     author_email="alex@codeissues.net",
     license="MIT",
     url="https://github.com/lexndru/buildok",
-    download_url="https://github.com/lexndru/buildok/archive/v0.2.3.tar.gz",
+    download_url="https://github.com/lexndru/buildok/archive/v0.2.4.tar.gz",
     keywords=["build-tool", "build-automation", "readme", "buildok"],
     classifiers=[
         "Development Status :: 3 - Alpha",
