@@ -23,7 +23,10 @@ from glob import glob
 from shutil import copy
 from distutils.dir_util import copy_tree
 
-def copy_files(src=None, dst=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class Copy(Action):
     r"""Copy files from a given source to a given destination.
 
     Args:
@@ -37,23 +40,25 @@ def copy_files(src=None, dst=None, *args, **kwargs):
         OSError: If an invalid `src` or `dst` is provided.
 
     Accepted statements:
-        ^copy from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-        ^copy `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
-        ^copy `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
+        ^copy from `(?P<src>.+)` to `(?P<dst>.+)`$
+        ^copy `(?P<src>.+)` files to `(?P<dst>.+)`$
+        ^copy `(?P<src>.+)` to `(?P<dst>.+)`$
 
     Sample input:
         1) Run `touch /tmp/buildok_test_copy.txt`.
         2) Copy `/tmp/buildok_test_copy.txt` to `/tmp/buildok_test_copy2.txt`.
 
     Expected:
-        Copied 1 file(s) and 0 folder(s)
+        Copied => 1 file(s) 0 dir(s)
     """
-    files, folders = 0, 0
-    for item in glob(src):
-        if path.isfile(item):
-            copy(item, dst)
-            files += 1
-        elif path.isdir(item):
-            copy_tree(item, dst)
-            folders += 1
-    return "Copied %d file(s) and %d folder(s)" % (files, folders)
+
+    def run(self, src=None, dst=None, *args, **kwargs):
+        files, folders = 0, 0
+        for item in glob(src):
+            if path.isfile(item):
+                copy(item, dst)
+                files += 1
+            elif path.isdir(item):
+                copy_tree(item, dst)
+                folders += 1
+        self.success("Copied => %d file(s) %d dir(s)" % (files, folders))

@@ -18,51 +18,66 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 import os
+
 
 class Reader(object):
     """Reader wrapper to gather build steps.
 
-    A new instance registers a new reader.
-    Has support for `.build` files and `README.md` files.
-
     Attributes:
-        readers (list): A list of all registered readers.
-        reader (str): Reader class name.
-        filename (str): File name of the file to read.
-        filepath (str): File path of the file to read.
+        READER (str): Class extending Reader.
+        PATH   (str): Path to build steps file.
+
+    Args:
+        validate (bool): Enable or disable build steps validation.
+        filename  (str): Build filename.
+        content  (list): Content from file context.
+        cursor    (int): Current line index being scanned.
+        line      (str): Current line content.
     """
-    readers = []
-    reader = ""
-    filename = ""
-    filepath = ""
 
-    def __init__(self):
-        self.readers.append(self)
-        self.reader = self.__class__.__name__
-        self.patch_filename()
+    READER, PATH = None, r"."
 
-    def patch_filename(self):
-        """Apply a patch to filename if filepath is set.
+    def __init__(self, validate=False):
+        self.validate = validate
+        self.filename = ""
+        self.content, self.cursor, self.line = [], 0, ""
+        self.setup() or self.crash()
 
-        Returns:
-            self: Reader instance.
+    @classmethod
+    def set_project_path(cls, project_path):
+        """Change project path.
+
+        Default is current working directory.
+
+        Args:
+            project_path (str): New project path.
+
+        Raises:
+            ValueError: If project path is not a string.
         """
-        if self.filepath == "":
-            return self
-        if os.path.isfile(self.filepath):
-            self.filename = self.filepath
-        elif os.path.isdir(self.filepath):
-            self.filename = r"{}/{}".format(self.filepath, self.filename)
-        return self
+        if not isinstance(project_path, (str, unicode)):
+            raise ValueError("Project path must be string")
+        cls.PATH = project_path.rstrip("/")
+
+    def parse(self):
+        """Parse build steps file.
+
+        Raises:
+            NotImplementedError: Readers must implement this method.
+        """
+        raise NotImplementedError("Must implement read method")
 
     def read(self):
         """Read build file content.
 
         Raises:
-            NotImplementedError: Readers must implement this method.
+            OSError: If `filename` cannot be found or accesed.
         """
-        raise NotImplementedError("%s must implement read method" % self.reader)
+        with open(self.filename, "rb") as file_:
+            self.content = [r.rstrip("\n") for r in file_.readlines()]
 
     def exists(self):
         """Check if build file exists.
@@ -72,35 +87,119 @@ class Reader(object):
         """
         return os.path.isfile(self.filename)
 
-    @classmethod
-    def get_all(cls):
-        """Return all build steps from all sources.
+    def crash(self):
+        """Crash reader with an error.
 
         Raises:
-            ValueError: If no reader was initialized.
-
-        Returns:
-            tuple: Non-empty tuple of build steps.
+            NotImplementedError: Reader must overwrite READER attribute.
         """
-        if len(cls.readers) == 0:
-            raise ValueError("No reader initialized")
-        data = []
-        for r in cls.readers:
-            data += r.read()
-        return tuple(data)
+        raise NotImplementedError("Directly call on Reader not allowed")
 
-    @classmethod
-    def get_first(cls):
-        """Return all build steps from first source.
+    def setup(self):
+        """Setup if reader is properly called.
 
         Raises:
-            ValueError: If no reader was initialized.
+            ValueError: Project does not have build file.
 
         Returns:
-            tuple: Non-empty tuple of build steps.
+            bool: Returns True if project setup is done.
         """
-        try:
-            data = cls.readers[0].read()
-        except IndexError:
-            raise ValueError("No reader initialized")
-        return tuple([d for d in data if d])
+        if self.READER is None or self.PATH is None:
+            return False
+        path = self.PATH
+        if os.path.isdir(path):
+            path = os.path.join(self.PATH, self.READER)
+        self.filename = os.path.abspath(path)
+        if not self.exists():
+            raise ValueError("Project does not have a proper build file: %s" % path)
+        return True
+
+    def get_build_source(self):
+        """Get a tuple of build file and a validation flag.
+
+        Returns:
+            build_file (str): Build file.
+            validate  (bool): True if has to be validated.
+        """
+        return (self.filename, self.validate)
+
+    def has_next(self):
+        """Check if reader has more lines to read.
+
+        Returns:
+            bool: True if it has unread lines, otherwise False.
+        """
+        more_lines = len(self.content) > self.cursor
+        if more_lines:
+            self.line = self.content[self.cursor]
+        return more_lines
+
+    def get_line(self):
+        """Get current line read.
+
+        Returns:
+            str: Current line from build file.
+        """
+        return self.line
+
+    def get_line_number(self):
+        """Get current line number.
+
+        Returns:
+            int: Current line number from build file.
+        """
+        return self.cursor
+
+    def next_line(self):
+        """Go to next line in build file.
+
+        It actually calls skip_line() with 1 iteration.
+        """
+        self.skip_line()
+
+    def skip_line(self, lines=1):
+        """Jump X lines ahead in build file.
+
+        Move line cursor ahead. By default it jumps one line.
+        Can go backwards if negative number is provided.
+        """
+        self.cursor += lines
+
+    def next_content(self):
+        """Get content ahead of cursor.
+
+        Returns:
+            list (list): Returns content ahead of cursor or empty list.
+        """
+        index = self.cursor + 1
+        if index >= len(self.content):
+            return []
+        return self.content[index:]
+
+    def preview(self, limit=80):
+        """Preview build file.
+
+        Outputs list of all lines from build file with line number in front.
+        """
+        self.read()
+        max_line = len(str(len(self.content))) + 1
+        limit -= max_line
+        print()
+        for i, line in enumerate(self.content):
+            _line = line
+            preview_line = ""
+            prefix = ("%" + str(max_line) + "d |") % i
+            if len(line) == 0:
+                preview_line = prefix + " [newline]"
+            while len(line) > 0:
+                preview_line += "%s %s\n" % (prefix, line[:limit])
+                line = line[limit:]
+            print(self.preview_line(_line, preview_line.rstrip("\n")))
+        print()
+
+    def preview_line(self, line, preview_line):
+        """Preview line from build file.
+
+        Useful to customize the display row of a line.
+        """
+        return u"\033[96m%s\033[0m" % preview_line

@@ -24,6 +24,7 @@ import os
 WORKING_DIR = os.getcwd()
 LOCK_FILE = os.path.join(WORKING_DIR, ".build.lock")
 
+
 def lock():
     """Create a lock file.
 

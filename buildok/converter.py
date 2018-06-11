@@ -51,7 +51,7 @@ class Converter(object):
             raise Exception("Unsupported yet: %s" % target)
         else:
             raise Exception("Unsupported target: %s" % target)
-        cls.statements = statement.statements
+        cls.statements = statement.get_actions()
 
     @classmethod
     def check(cls):

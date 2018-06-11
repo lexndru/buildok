@@ -20,7 +20,10 @@
 
 from subprocess import check_output, CalledProcessError, STDOUT
 
-def exec_shell(cmd=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class ShellExec(Action):
     r"""Run a command in shell.
 
     Args:
@@ -33,7 +36,7 @@ def exec_shell(cmd=None, *args, **kwargs):
         OSError: If an invalid `cmd` is provided.
 
     Accepted statements:
-        ^run `(?P<cmd>.+)`[\.\?\!]$
+        ^run `(?P<cmd>.+)`$
 
     Sample input:
         1) Run `echo hello friend how are you`.
@@ -41,10 +44,13 @@ def exec_shell(cmd=None, *args, **kwargs):
     Expected:
         hello friend how are you
     """
-    try:
-        output = check_output(cmd.split(), stderr=STDOUT)
-    except CalledProcessError as e:
-        return e.output
-    if output is None:
-        return "n/a"
-    return output.decode('utf-8').strip()
+
+    def run(self, cmd=None, *args, **kwargs):
+        try:
+            output = check_output(cmd.split(), stderr=STDOUT)
+        except CalledProcessError as e:
+            self.failed(e.output)
+        if output is None:
+            self.success("no error")
+        else:
+            self.success(output.decode('utf-8').strip())

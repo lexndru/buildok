@@ -22,7 +22,10 @@ from os import kill
 from signal import SIGTERM
 from subprocess import check_output, CalledProcessError
 
-def kill_proc(pid=None, pname=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class KillProcess(Action):
     r"""Send SIGTERM signal to a process.
 
     Args:
@@ -37,11 +40,8 @@ def kill_proc(pid=None, pname=None, *args, **kwargs):
         CalledProcessError: If `pname` is not found.
 
     Accepted statements:
-        ^kill process `(?P<pname>.+)`[\.\?\!]$
-        ^kill pid `(?P<pid>.+)`[\.\?\!]$
-        ^stop process `(?P<pname>.+)`[\.\?\!]$
-        ^stop pid `(?P<pid>.+)`[\.\?\!]$
-        ^nothing to do[\.\?\!]$
+        ^(?:kill|stop) process `(?P<pname>.+)`$
+        ^(?:kill|stop) pid `(?P<pid>.+)`$
 
     Sample (input):
         1) Stop process `someProcessName`.
@@ -49,17 +49,18 @@ def kill_proc(pid=None, pname=None, *args, **kwargs):
     Expected:
         Terminated process PID => 9999
     """
-    try:
-        if pname is not None:
-            pid = check_output(["pidof", "-s", name])
-        if pid is None:
-            raise ValueError
-        kill(int(pid), SIGTERM)
-        return "Terminated process PID => %s" % pid
-    except OSError as e:
-        raise e
-    except CalledProcessError as e:
-        raise e
-    except ValueError:
-        return "Nothing to do"
-    return "Nothing to do"
+
+    def run(self, pid=None, pname=None, *args, **kwargs):
+        try:
+            if pname is not None:
+                pid = check_output(["pidof", "-s", name])
+            if pid is None:
+                raise ValueError("Invalid PID")
+            kill(int(pid), SIGTERM)
+            self.susccess("Terminated process PID => %s" % pid)
+        except OSError as e:
+            self.failed(str(e))
+        except ValueError as e:
+            self.failed(str(e))
+        except CalledProcessError as e:
+            self.failed(str(e))

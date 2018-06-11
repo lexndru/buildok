@@ -20,8 +20,11 @@
 
 from os import symlink, getcwd
 
-def make_symlink(src=None, dst=None, *args, **kwargs):
-    r"""Make a directory or make recursive directories.
+from buildok.action import Action
+
+
+class MakeSymlink(Action):
+    r"""Make a symlink for a target source.
 
     Args:
         src (str): Source of files.
@@ -34,9 +37,9 @@ def make_symlink(src=None, dst=None, *args, **kwargs):
         OSError: If an invalid `src` or `dst` is provided or if `dst` already exists.
 
     Accepted statements:
-        ^create symlink from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-        ^make symlink `(?P<dst>.+)` from `(?P<src>.+)`[\.\?\!]$
-        ^make symlink `(?P<dst>.+)`[\.\?\!]$
+        ^create symlink from `(?P<src>.+)` to `(?P<dst>.+)`$
+        ^make symlink `(?P<dst>.+)` from `(?P<src>.+)`$
+        ^make symlink `(?P<dst>.+)`$
 
     Sample input:
         1) Run `touch buildok_test_symlink`.
@@ -45,11 +48,12 @@ def make_symlink(src=None, dst=None, *args, **kwargs):
     Expected:
         Created symlink buildok_test_symlink => buildok_test_symlink_ok
     """
-    try:
+
+    def run(self, src=None, dst=None, *args, **kwargs):
         if src is None:
             src = getcwd()
-        symlink(src, dst)
-        return "Created symlink %s => %s" % (src, dst)
-    except OSError as e:
-        raise e
-    return "Nothing to do"
+        try:
+            symlink(src, dst)
+            self.success("Created symlink %s => %s" % (src, dst))
+        except OSError as e:
+            self.failed(str(e))

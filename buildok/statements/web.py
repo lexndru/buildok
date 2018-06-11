@@ -20,7 +20,10 @@
 
 import webbrowser as wb
 
-def exec_web(url=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class ViewWeb(Action):
     r"""Open a link in default browser.
 
     Args:
@@ -33,9 +36,8 @@ def exec_web(url=None, *args, **kwargs):
         TypeError: If an invalid `url` is provided.
 
     Accepted statements:
-        ^open in browser `(?P<url>.+)`[\.\?\!]$
-        ^open link `(?P<url>.+)`[\.\?\!]$
-        ^open url `(?P<url>.+)`[\.\?\!]$
+        ^open in browser `(?P<url>.+)`$
+        ^open (?:link|url) `(?P<url>.+)`$
 
     Sample (input):
         1) Open link `https://github.com/lexndru/buildok`.
@@ -43,9 +45,10 @@ def exec_web(url=None, *args, **kwargs):
     Expected:
         Opened URL in browser => https://github.com/lexndru/buildok
     """
-    try:
-        wb.get().open(url, new=2)
-        return "Opened URL in browser => %s" % url
-    except TypeError as e:
-        raise e
-    return "Nothing to do"
+
+    def run(self, url=None, *args, **kwargs):
+        try:
+            wb.get().open(url, new=2)
+            self.success("Opened URL in browser => %s" % url)
+        except TypeError as e:
+            self.failed(str(e))

@@ -20,6 +20,7 @@
 
 from argparse import ArgumentParser
 
+
 class Shell(object):
     """Shell argument parser.
 
@@ -27,12 +28,13 @@ class Shell(object):
         parser (ArgumentParser): Argument parser.
         args (dict): Dictionary of arguments.
     """
+
     parser = ArgumentParser(description="A tool to automate build steps from README files")
     args = {
-        ("-p", "--project"): {
+        ("-g", "--guide"): {
             "action": "store",
-            "dest": "project",
-            "help": "path to project"
+            "dest": "guide",
+            "help": "path to guide"
         },
         ("-v", "--verbose"): {
             "action": "store_true",
@@ -48,6 +50,21 @@ class Shell(object):
             "action": "store_true",
             "dest": "analyze",
             "help": "scan all known statements"
+        },
+        ("-t", "--topic"): {
+            "action": "store",
+            "dest": "topic",
+            "help": "set topic to build"
+        },
+        (None, "--topic-pattern"): {
+            "action": "store",
+            "dest": "topic_pattern",
+            "help": "set topic pattern"
+        },
+        ("-p", "--preview"): {
+            "action": "store_true",
+            "dest": "preview",
+            "help": "visual preview of scanned guide"
         },
     }
 

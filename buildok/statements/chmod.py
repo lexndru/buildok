@@ -20,7 +20,10 @@
 
 from os import chmod, getcwd
 
-def change_mod(mode="400", path=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class ChangeMod(Action):
     r"""Change permissions on file or directory.
 
     Args:
@@ -35,10 +38,10 @@ def change_mod(mode="400", path=None, *args, **kwargs):
         TypeError: If an invalid `mode` is provided.
 
     Accepted statements:
-        ^change permissions to `(?P<mode>.+)`[\.\?\!]$
-        ^change permissions to `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
-        ^change permissions `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
-        ^set permissions to `(?P<mode>.+)` for `(?P<path>.+)`[\.\?\!]$
+        ^change permissions to `(?P<mode>.+)`$
+        ^change permissions to `(?P<mode>.+)` for `(?P<path>.+)`$
+        ^change permissions `(?P<mode>.+)` for `(?P<path>.+)`$
+        ^set permissions to `(?P<mode>.+)` for `(?P<path>.+)`$
 
     Sample input:
         1) Run `touch /tmp/buildok_test.txt`.
@@ -47,13 +50,14 @@ def change_mod(mode="400", path=None, *args, **kwargs):
     Expected:
         Changed permissions 400 => /tmp/buildok_test.txt
     """
-    try:
+
+    def run(self, mode="400", path=None, *args, **kwargs):
         if path is None:
             path = getcwd()
-        chmod(path, int(mode, 8))
-        return "Changed permissions %s => %s" % (mode, path)
-    except OSError as e:
-        raise e
-    except TypeError as e:
-        raise e
-    return "Nothing to do"
+        try:
+            chmod(path, int(mode, 8))
+            self.success("Changed permissions %s => %s" % (mode, path))
+        except OSError as e:
+            self.failed(str(e))
+        except TypeError as e:
+            self.failed(str(e))

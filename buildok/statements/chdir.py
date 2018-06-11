@@ -20,7 +20,10 @@
 
 from os import chdir
 
-def change_dir(path=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class ChangeDir(Action):
     r"""Change current working directory.
 
     Args:
@@ -33,17 +36,19 @@ def change_dir(path=None, *args, **kwargs):
         OSError: If an invalid `path` is provided.
 
     Accepted statements:
-        ^go to `(?P<path>.+)`[\.\?\!]$
+        ^go to `(?P<path>.+)`$
+        ^change (?:dir|directory|folder) to `(?P<path>.+)`$
 
     Sample input:
         1) Go to `/tmp`.
 
     Expected:
-        Changed directory to /tmp
+        Changed directory => /tmp
     """
-    try:
-        chdir(path)
-        return "Changed directory to %s" % path
-    except OSError as e:
-        raise e
-    return "Nowhere to go"
+
+    def run(self, path=None, *args, **kwargs):
+        try:
+            chdir(path)
+            self.success("Changed directory => %s" % path)
+        except Exception as e:
+            self.failed(str(e))

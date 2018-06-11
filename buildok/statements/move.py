@@ -20,7 +20,10 @@
 
 from shutil import move
 
-def move_files(src=None, dst=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class Move(Action):
     r"""Move files from a given source to a given destination.
 
     Args:
@@ -34,9 +37,9 @@ def move_files(src=None, dst=None, *args, **kwargs):
         OSError: If an invalid `src` or `dst` is provided.
 
     Accepted statements:
-        ^move from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-        ^move `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
-        ^rename `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
+        ^move from `(?P<src>.+)` to `(?P<dst>.+)`$
+        ^move `(?P<src>.+)` files to `(?P<dst>.+)`$
+        ^rename `(?P<src>.+)` to `(?P<dst>.+)`$
 
     Sample input:
         1) Go to `/tmp`.
@@ -46,9 +49,10 @@ def move_files(src=None, dst=None, *args, **kwargs):
     Expected:
         Moved buildok_test_folder_move => buildok_test_folder_moved
     """
-    try:
-        move(src, dst)
-        return "Moved %s => %s" % (src, dst)
-    except OSError as e:
-        raise e
-    return "Nothing to move"
+
+    def run(self, src=None, dst=None, *args, **kwargs):
+        try:
+            move(src, dst)
+            self.success("Moved %s => %s" % (src, dst))
+        except OSError as e:
+            self.failed(str(e))

@@ -21,7 +21,10 @@
 from os import path, remove
 from shutil import rmtree
 
-def remove_files(src=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class Remove(Action):
     r"""Remove files from a given source.
 
     Args:
@@ -34,11 +37,9 @@ def remove_files(src=None, *args, **kwargs):
         OSError: If an invalid `src` is provided.
 
     Accepted statements:
-        ^remove from `(?P<src>.+)`[\.\?\!]$
-        ^remove `(?P<src>.+)` files[\.\?\!]$
-        ^remove file `(?P<src>.+)`[\.\?\!]$
-        ^remove directory `(?P<src>.+)`[\.\?\!]$
-        ^remove folder `(?P<src>.+)`[\.\?\!]$
+        ^remove from `(?P<src>.+)`$
+        ^remove `(?P<src>.+)` files$
+        ^remove (?:file|folder|directory) `(?P<src>.+)`$
 
     Sample input:
         1) Go to `/tmp`.
@@ -46,14 +47,15 @@ def remove_files(src=None, *args, **kwargs):
         3) Remove file `buildok_test_tmp.txt`.
 
     Expected:
-        Removed buildok_test_tmp.txt
+        Removed => buildok_test_tmp.txt
     """
-    try:
-        if path.isfile(src):
-            remove(src)
-        elif path.isdir(src):
-            rmtree(src)
-        return "Removed %s" % src
-    except OSError as e:
-        raise e
-    return "Nothing to remove"
+
+    def run(self, src=None, *args, **kwargs):
+        try:
+            if path.isfile(src):
+                remove(src)
+            elif path.isdir(src):
+                rmtree(src)
+            self.success("Removed => %s" % src)
+        except OSError as e:
+            self.failed(str(e))

@@ -18,11 +18,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from pwd import getpwnam
-from grp import getgrnam
 from os import chown, getcwd
 
-def change_own(owner="", group="", path=None, *args, **kwargs):
+try:
+    from pwd import getpwnam
+    from grp import getgrnam
+except ImportError:
+    getpwnam = type("getpwnam", (object,), dict(pw_uid=-1))
+    getgrnam = type("getgrnam", (object,), dict(gr_gid=-1))
+
+from buildok.action import Action
+
+
+class ChangeOwner(Action):
     r"""Change owner and group on file or directory.
 
     Args:
@@ -37,11 +45,11 @@ def change_own(owner="", group="", path=None, *args, **kwargs):
         OSError: If an invalid `path` is provided.
 
     Accepted statements:
-        ^change file owner to `(?P<owner>.+)` on `(?P<path>.+)`[\.\?\!]$
-        ^change owner to `(?P<owner>.+)` on `(?P<path>.+)`[\.\?\!]$
-        ^change user to `(?P<owner>.+)` on `(?P<path>.+)`[\.\?\!]$
-        ^change user and group to `(?P<owner>.+):(?P<group>.+)`[\.\?\!]$
-        ^set owner and group `(?P<owner>.+):(?P<group>.+)` for `(?P<path>.+)`[\.\?\!]$
+        ^change file owner to `(?P<owner>.+)` on `(?P<path>.+)`$
+        ^change owner to `(?P<owner>.+)` on `(?P<path>.+)`$
+        ^change user to `(?P<owner>.+)` on `(?P<path>.+)`$
+        ^change user and group to `(?P<owner>.+):(?P<group>.+)`$
+        ^set owner and group `(?P<owner>.+):(?P<group>.+)` for `(?P<path>.+)`$
 
     Sample (input):
         1) Run `touch /tmp/buildok_test.txt`.
@@ -50,7 +58,8 @@ def change_own(owner="", group="", path=None, *args, **kwargs):
     Expected:
         Changed owner nobody => /tmp/buildok_test.txt
     """
-    try:
+
+    def run(self, owner="", group="", path=None, *args, **kwargs):
         if owner != "":
             uid = getpwnam(owner).pw_uid
         else:
@@ -61,13 +70,13 @@ def change_own(owner="", group="", path=None, *args, **kwargs):
             gid = -1
         if path is None:
             path = getcwd()
-        chown(path, uid, gid)
-        if uid != -1 and gid == -1:
-            return "Changed owner %s => %s" % (owner, path)
-        elif uid == -1 and gid != -1:
-            return "Changed group %s => %s" % (group, path)
-        elif uid != -1 and gid != -1:
-            return "Changed ownwer:group %s:%s => %s" % (owner, group, path)
-    except OSError as e:
-        raise e
-    return "Nothing to do"
+        try:
+            chown(path, uid, gid)
+            if uid != -1 and gid == -1:
+                self.success("Changed owner %s => %s" % (owner, path))
+            elif uid == -1 and gid != -1:
+                self.success("Changed group %s => %s" % (group, path))
+            elif uid != -1 and gid != -1:
+                self.success("Changed ownwer:group %s:%s => %s" % (owner, group, path))
+        except OSError as e:
+            self.failed(str(e))

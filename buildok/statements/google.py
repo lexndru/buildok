@@ -18,38 +18,37 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import makedirs
+import webbrowser as wb
 
 from buildok.action import Action
 
 
-class MakeDir(Action):
-    r"""Make a directory or make recursive directories.
+class GoogleSearch(Action):
+    r"""Open a Google search results in default browser.
 
     Args:
-        path (str): Path to directory.
+        search (str): Search string to lookup.
 
     Retuns:
-        str: Human readable descriptor message or error.
+        str: Output as string.
 
     Raises:
-        OSError: If an invalid `path` is provided or if path already exists.
+        TypeError: If an invalid `search` is provided.
 
     Accepted statements:
-        ^create (?:folder|directory) `(?P<path>.+)`$
-        ^make new (?:folder|directory) `(?P<path>.+)`$
+        ^google (?:for )?`(?P<search>.+)`$
 
-    Sample input:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder`.
+    Sample (input):
+        1) Google `buildok`.
 
     Expected:
-        Created new directory => buildok_test_folder
+        Opened URL in browser => https://google.com/?q=buildok
     """
 
-    def run(self, path=None, *args, **kwargs):
+    def run(self, search=None, *args, **kwargs):
+        url = "https://www.google.com?q={}".format(search)
         try:
-            makedirs(path)
-            self.success("Created new directory => %s" % path)
-        except OSError as e:
+            wb.get().open(url, new=2)
+            self.success("Opened URL in browser => %s" % url)
+        except TypeError as e:
             self.failed(str(e))

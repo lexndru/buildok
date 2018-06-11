@@ -19,44 +19,164 @@
 # THE SOFTWARE.
 
 from buildok.reader import Reader
-from buildok.parser import Parser
+
+from buildok.structures.instruction import Instruction
+from buildok.structures.guide import Guide
+from buildok.structures.topic import Topic
+
+from buildok.util.console import Console
+from buildok.util.readerr import ReadError
+
 
 class ReadmeReader(Reader):
     """File class helper to detect and read a README file.
 
-    Attributes:
-        filename (string): Path to README filename.
-        context (string): Original context of `filename`.
-        build_section (tuple): Build section accepted titles.
+    Class arguments:
+        last_guide      (Guide): Last Guide instance.
+        last_topic      (Topic): Last Topic instance.
+        last_step (Instruction): Last Instruction instance.
+        delimiter         (str): Payload delimiter.
+        recent_topic      (str): Holder for recent topic.
     """
-    READ_MODE = "rb"
-    filename = "README.md"
-    context = []
-    build_section = ("how to build ok", "build ok steps")
 
-    def read(self):
-        """Read README file content.
+    READER = r"README.md"
+
+    class NoPayloadError(ReadError):
+
+        error = r"Instruction payload missing for step: %s"
+
+    class UnclosedPayloadError(ReadError):
+
+        error = r"Unclosed instruction payload for step: %s"
+
+    class BadFormatError(ReadError):
+
+        error = r"Missing instruction payload for step: %s"
+
+    last_guide = None
+    last_topic = None
+    last_step = None
+
+    recent_topic = "n/a"
+
+    delimiter = r"```"
+    __topicre = Topic.prepare(r"## how to (?P<topic>[a-zA-Z0-9]+)")
+
+    def parse(self):
+        """Parse build steps file.
+
+        Loop through all steps and check for topics and instructions.
+        """
+        self.last_guide = Guide()
+        while self.has_next():
+            line = self.get_line()
+            self.check_topic(line)
+            self.check_instruction(line).check_payload(self.next_content())
+            self.next_line()
+
+    def get_guide(self):
+        """Get latest guide.
 
         Returns:
-            str: Returns build steps from `filename` content on success.
-            NoneType: Returns None on failure.
-
-        Raises:
-            IOError: If `filename` does not exist or does not have permissions.
+            mixt: Guide instance if is set, otherwise None.
         """
-        with open(self.filename, self.READ_MODE) as file_:
-            ctx = file_.readlines()
-            self.parse_build(ctx)
-            return self.context
+        return self.last_guide
+
+    def get_guide_by_topic(self):
+        """Get new guide filtered by topic.
+
+        Returns:
+            mixt: Guide instance if is set, otherwise None.
+        """
+        for topic in self.last_guide.get_topics():
+            if Topic.TOPIC == topic.get_title():
+                guide = Guide()
+                guide.add_topic(topic)
+                return guide
         return None
 
-    def parse_build(self, ctx=[]):
-        """Parse README file and look for build steps.
+    def check_topic(self, line):
+        """Check line from build steps if it's a topic.
 
         Args:
-            ctx (list): Original `filename` content as lines.
+            line (str): Build step line as string.
 
         Returns:
-            list: Non-empty list if build steps are found.
+            self: Self instance.
         """
-        self.context = Parser.parse(tuple(ctx), self.build_section)
+        scan = Topic.PATTERN.match(line)
+        if scan is not None:
+            title = scan.group("topic")
+            self.last_topic = Topic(self.get_line_number(), title)
+            self.last_guide.add_topic(self.last_topic)
+        return self
+
+    def check_instruction(self, line):
+        """Check line from build steps if it's an instruction.
+
+        Args:
+            line (str): Build step line as string.
+
+        Raises:
+            Exception: If last topic is missing and step is found.
+
+        Returns:
+            self: Self instance.
+        """
+        scan = Instruction.PATTERN.match(line)
+        if scan is not None:
+            step = scan.group("step")
+            punct = scan.group("punct")
+            self.last_step = Instruction(self.get_line_number(), step, punct)
+            if self.last_topic is None:
+                raise Exception("Unaccepted instruction: missing topic in guide")
+            self.last_topic.add_step(self.last_step)
+        return self
+
+    def check_payload(self, content):
+        """Check line from build steps if it's an instruction payload.
+
+        Args:
+            content (list): Build step lines ahead of current cursor.
+
+        Returns:
+            self: Self instance.
+        """
+        if self.last_step is None or self.last_step.punct != Instruction.RunType.ARGS:
+            return self
+        newlines, borders = 0, []
+        for i, next_line in enumerate(content):
+            if len(borders) == 0 and newlines > 1:
+                raise self.NoPayloadError(self.last_step)
+            if next_line.strip() == "":
+                newlines += 1
+                continue
+            if next_line.strip() == self.delimiter:
+                borders.append(i)
+            if len(borders) == 2:
+                break
+        if len(borders) == 1:
+            raise self.UnclosedPayloadError(self.last_step)
+        try:
+            a, z = borders
+            self.last_step.set_payload(content[1+a:z])
+            self.skip_line(lines=z+1)
+            self.last_step = None
+        except Exception as e:
+            raise self.BadFormatError(self.last_step)
+        return self
+
+    def preview_line(self, line, preview_line):
+        """Preview line from build file.
+
+        Useful to customize the display row of a line.
+        """
+        line_topic = Topic.PATTERN.match(line)
+        if line_topic is not None:
+            self.recent_topic = line_topic.group("topic")
+            line_desc = "topic (%s)" % self.recent_topic
+            return Console.green(preview_line, "<--- %s" % line_desc)
+        if Instruction.PATTERN.match(line) is not None:
+            line_desc = "instruction (%s)" % self.recent_topic
+            return Console.yellow(preview_line, "<--- %s" % line_desc)
+        return Console.darkgray(preview_line)

@@ -18,38 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import makedirs
 
-from buildok.action import Action
+class ReadError(Exception):
+    """Reader exception error.
 
-
-class MakeDir(Action):
-    r"""Make a directory or make recursive directories.
-
-    Args:
-        path (str): Path to directory.
-
-    Retuns:
-        str: Human readable descriptor message or error.
-
-    Raises:
-        OSError: If an invalid `path` is provided or if path already exists.
-
-    Accepted statements:
-        ^create (?:folder|directory) `(?P<path>.+)`$
-        ^make new (?:folder|directory) `(?P<path>.+)`$
-
-    Sample input:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder`.
-
-    Expected:
-        Created new directory => buildok_test_folder
+    Used to customize exceptions for readers.
     """
 
-    def run(self, path=None, *args, **kwargs):
-        try:
-            makedirs(path)
-            self.success("Created new directory => %s" % path)
-        except OSError as e:
-            self.failed(str(e))
+    error = "n/a"
+
+    def __init__(self, err):
+        step = err.get_step() if err is not None else "n/a"
+        super(self.__class__, self).__init__(error % unicode(step))
