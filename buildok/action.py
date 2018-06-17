@@ -27,13 +27,19 @@ class Action(object):
     Arguments:
         header (str): Lookup docstring header.
 
+    Args:
+        output  (str): Output status message.
+        failed (bool): Handler failture status.
+        payload (str): Handler payload input message.
+
     Raises:
         any: Any exception raised by action handler
     """
 
     doc_header = r"accepted statements"
 
-    def __init__(self):
+    def __init__(self, payload=None):
+        self.payload = payload
         self.output = ""
         self.failed = None
 
@@ -60,6 +66,22 @@ class Action(object):
             message (str): Output message.
         """
         self.output = message
+
+    def get_payload(self):
+        """Payload getter.
+
+        Returns:
+            str: Payload input message.
+        """
+        return self.payload
+
+    def set_payload(self, payload):
+        """Payload setter.
+
+        Args:
+            payload (str): Payload input message.
+        """
+        self.payload = payload
 
     def success(self, message=""):
         """Flag action as being successful.
@@ -91,6 +113,16 @@ class Action(object):
         """Action handler runnable.
 
         Runs the context of an action handler.
+
+        Raises:
+            NotImplementedError: If not implemented.
+        """
+        raise NotImplementedError("Class must implement this method")
+
+    def test(self, *args, **kwargs):
+        """Action handler testable.
+
+        Tests the context of an action handler.
 
         Raises:
             NotImplementedError: If not implemented.

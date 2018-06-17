@@ -32,6 +32,8 @@ from buildok.statements.kill import KillProcess
 from buildok.statements.copy import Copy
 from buildok.statements.move import Move
 from buildok.statements.remove import Remove
+from buildok.statements.touch import Touch
+from buildok.statements.edit_file import EditFile
 
 
 class Statement(object):
@@ -56,6 +58,8 @@ class Statement(object):
         Move,         # Move files from a given source to a given destination.
         Remove,       # Remove files from a given source.
         KillProcess,  # Send SIGTERM signal to a process.
+        Touch,        # Create a new file.
+        EditFile,     # Edit content of an existing file.
     }
 
     statements = {}

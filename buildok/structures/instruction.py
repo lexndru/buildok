@@ -236,6 +236,7 @@ class Instruction(object):
         handler, args = self.action(), self.args
         if not isinstance(args, tuple):
             args = ()
+        handler.set_payload(self.payload)
         handler.run(*args)
         return handler.get_status()
 

@@ -219,7 +219,7 @@ def get_topic(topics):
             raise IndexError
         return topics[pos-1]
     except IndexError:
-        return read_steps(topics)
+        return get_topic(topics)
     except Exception:
         pass
     try:
@@ -237,4 +237,4 @@ def get_topic(topics):
             return partial_match
     except Exception:
         pass
-    return read_steps(topics)
+    return get_topic(topics)
