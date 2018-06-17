@@ -49,7 +49,7 @@ class ShellExec(Action):
         try:
             output = check_output(cmd.split(), stderr=STDOUT)
         except CalledProcessError as e:
-            self.failed(e.output)
+            self.fail(e.output)
         if output is None:
             self.success("no error")
         else:

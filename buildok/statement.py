@@ -40,6 +40,7 @@ class Statement(object):
     Attributes:
         __actions (frozen set): Set of all known statements and actions.
         statements (list): List of all statements.
+        ready      (bool): Setup flag to determine status.
     """
 
     __actions = {
@@ -58,6 +59,7 @@ class Statement(object):
     }
 
     statements = {}
+    ready = False
 
     @classmethod
     def prepare(cls):
@@ -77,6 +79,7 @@ class Statement(object):
                 cls.statements.update({exp: action})
         if len(cls.statements) < len(cls.__actions):
             raise SystemExit("Unable to map statements to action")
+        cls.ready = True
 
     @classmethod
     def find_statement(cls, stmt):

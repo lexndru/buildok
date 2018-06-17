@@ -51,4 +51,4 @@ class ViewWeb(Action):
             wb.get().open(url, new=2)
             self.success("Opened URL in browser => %s" % url)
         except TypeError as e:
-            self.failed(str(e))
+            self.fail(str(e))

@@ -58,4 +58,4 @@ class Remove(Action):
                 rmtree(src)
             self.success("Removed => %s" % src)
         except OSError as e:
-            self.failed(str(e))
+            self.fail(str(e))

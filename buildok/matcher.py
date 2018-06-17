@@ -18,37 +18,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import webbrowser as wb
-
-from buildok.action import Action
+from buildok.statement import Statement
 
 
-class GoogleSearch(Action):
-    r"""Open a Google search results in default browser.
+class Matcher(object):
 
-    Args:
-        search (str): Search string to lookup.
+    @classmethod
+    def is_valid(cls, text_step):
+        step = text_step.strip()
+        if len(step) == 0:
+            return False
+        for exp, _ in Statement.get_statements():
+            if exp.match(step) is not None:
+                return True
+        return False
 
-    Retuns:
-        str: Output as string.
+    @classmethod
+    def pair_all(cls, instructions):
+        return all([cls.pair_one(i) for i in instructions])
 
-    Raises:
-        TypeError: If an invalid `search` is provided.
-
-    Accepted statements:
-        ^google (?:for )?`(?P<search>.+)`$
-
-    Sample (input):
-        1) Google `buildok`.
-
-    Expected:
-        Opened URL in browser => https://google.com/?q=buildok
-    """
-
-    def run(self, search=None, *args, **kwargs):
-        url = "https://www.google.com?q={}".format(search)
-        try:
-            wb.get().open(url, new=2)
-            self.success("Opened URL in browser => %s" % url)
-        except TypeError as e:
-            self.fail(str(e))
+    @classmethod
+    def pair_one(cls, instruction):
+        for exp, fun in Statement.get_statements():
+            args = exp.match(instruction.get_step())
+            if args is not None:
+                instruction.set_description(fun.parse_description())
+                instruction.set_statement(fun)
+                instruction.set_arguments(args.groups())
+                return True
+        return False

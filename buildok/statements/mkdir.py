@@ -52,4 +52,4 @@ class MakeDir(Action):
             makedirs(path)
             self.success("Created new directory => %s" % path)
         except OSError as e:
-            self.failed(str(e))
+            self.fail(str(e))

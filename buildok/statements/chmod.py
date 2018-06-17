@@ -58,6 +58,6 @@ class ChangeMod(Action):
             chmod(path, int(mode, 8))
             self.success("Changed permissions %s => %s" % (mode, path))
         except OSError as e:
-            self.failed(str(e))
+            self.fail(str(e))
         except TypeError as e:
-            self.failed(str(e))
+            self.fail(str(e))

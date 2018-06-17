@@ -56,4 +56,4 @@ class MakeSymlink(Action):
             symlink(src, dst)
             self.success("Created symlink %s => %s" % (src, dst))
         except OSError as e:
-            self.failed(str(e))
+            self.fail(str(e))

@@ -86,6 +86,15 @@ class Console(object):
         return u"\033[93m{}\033[0m {}".format(text, " ".join(args))
 
     @classmethod
+    def red(cls, text, *args):
+        """Print text in red color.
+
+        Return:
+            str: Colored text.
+        """
+        return u"\033[91m{}\033[0m {}".format(text, " ".join(args))
+
+    @classmethod
     def log(cls, message=None):
         """Print log message.
 

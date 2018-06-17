@@ -40,7 +40,7 @@ class Instruction(object):
         TypeError: If invalid datatype is provided.
     """
 
-    PATTERN = re.compile(r"^[\-|\d+\)]\s+(?P<step>.+)[^\.\!\?\:\;]?(?P<punct>[\.\!\?\:\;]{1})$", re.U)
+    PATTERN = re.compile(r"^(?:\-|\d+\))\s+(?P<step>.+)(?<=[^\.\!\?\:\;])(?P<punct>[\.\!\?\:\;]{1})$", re.I|re.U)
 
     class RunType(object):
         """Statement action punctuation.
@@ -68,6 +68,7 @@ class Instruction(object):
         self.action = None
         self.args = None
         self.payload = None
+        self.description = None
 
     def set_payload(self, payload):
         """Instruction payload setter.
@@ -137,6 +138,27 @@ class Instruction(object):
         """
         return self.step
 
+    def set_description(self, value):
+        """Instruction description setter.
+
+        Args:
+            value (str): Instruction description as text.
+
+        Raises:
+            TypeError: If value is not a non-empty string.
+        """
+        if not isinstance(value, (str, unicode)) or len(value) == 0:
+            raise TypeError("Description must be non-empty string")
+        self.description = value
+
+    def get_description(self):
+        """Instruction description getter.
+
+        Returns:
+            str: Instruction description string.
+        """
+        return self.description
+
     def set_statement(self, value):
         """Instruction action statement setter.
 
@@ -203,14 +225,18 @@ class Instruction(object):
     def run(self):
         """Run instruction.
 
+        Raises:
+            TypeError: If action is not callable or is not set.
+
         Returns:
             tuple: (Boolean) True if succeeds, otherwise False; (String) output.
         """
-        handler = self.action()
-        try:
-            handler.run(*self.args)
-        except Exception as e:
-            handler.failed(str(e))
+        if not callable(self.action):
+            raise TypeError("Action is not set")
+        handler, args = self.action(), self.args
+        if not isinstance(args, tuple):
+            args = ()
+        handler.run(*args)
         return handler.get_status()
 
     def __repr__(self):

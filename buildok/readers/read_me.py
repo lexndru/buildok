@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 
 from buildok.reader import Reader
+from buildok.matcher import Matcher
 
 from buildok.structures.instruction import Instruction
 from buildok.structures.guide import Guide
@@ -60,7 +61,7 @@ class ReadmeReader(Reader):
     recent_topic = "n/a"
 
     delimiter = r"```"
-    __topicre = Topic.prepare(r"## how to (?P<topic>[a-zA-Z0-9]+)")
+    __topicre = Topic.prepare(r"## how to (?P<topic>[\s\w\-]+)")
 
     def parse(self):
         """Parse build steps file.
@@ -176,7 +177,14 @@ class ReadmeReader(Reader):
             self.recent_topic = line_topic.group("topic")
             line_desc = "topic (%s)" % self.recent_topic
             return Console.green(preview_line, "<--- %s" % line_desc)
-        if Instruction.PATTERN.match(line) is not None:
-            line_desc = "instruction (%s)" % self.recent_topic
-            return Console.yellow(preview_line, "<--- %s" % line_desc)
+        line_step = Instruction.PATTERN.match(line)
+        if line_step is not None:
+            step = line_step.group("step")
+            if Matcher.is_valid(step):
+                line_desc = "instruction (%s)" % self.recent_topic
+                method = "yellow"
+            else:
+                line_desc = "unsupported instruction (%s)" % self.recent_topic
+                method = "red"
+            return getattr(Console, method)(preview_line, "<--- %s" % line_desc)
         return Console.darkgray(preview_line)

@@ -55,4 +55,4 @@ class Move(Action):
             move(src, dst)
             self.success("Moved %s => %s" % (src, dst))
         except OSError as e:
-            self.failed(str(e))
+            self.fail(str(e))

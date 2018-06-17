@@ -22,6 +22,7 @@ from __future__ import print_function
 
 from buildok.statement import Statement
 from buildok.converter import Converter
+from buildok.matcher import Matcher
 from buildok.reader import Reader
 
 from buildok.readers.read_me import ReadmeReader
@@ -133,104 +134,107 @@ def main(error=None):
     # Self-analyze buildok and continue or crash
     self_analyze(None, Statement) or crash("Run an analyze and correct problems")
 
-    # # Statement.find():
-    # for k, v in Statement.get_statements():
-    #     print(k, v)
-    # # print Statement.get_actions()
+    # Prepare reader and side-setup
+    if not setup(args):
+        raise SystemExit("Setup not ready. If problem persist try to reinstall")
 
     # Create a lock file
-    # lock()
+    lock()
     try:
 
-        # Prepare reader and side-setup
-        if not setup(args):
-            raise Exception("Setup not ready")
-
-        # Read build steps and validate-parse through
-        rr = ReadmeReader(validate=True)
-        rr.read()
-        rr.parse()
-
-        # Preview scanned guide
-        if args.preview:
-            rr.preview(150)
-
-        raise SystemExit("WIP...")
-
-        # Scan guide for topics
-        if args.topic is None:
-            guide = rr.get_guide()
-        else:
-            guide = rr.get_guide_by_topic()
-        if guide is None:
-            raise ValueError("Guide has no such topic")
-
-        # Scan topics
-        topics = [t.get_title() for t in guide.get_topics()]
-        topics_len = len(topics)
-
-        if topics_len > 0:
-            print("Found the following topics:")
-            for pos, name in enumerate(topics):
-                print(("%" + str(len(str(topics_len))+1) + "d) %s") % (pos+1, name))
-            steps = read_steps(guide.get_topics())
-
-            for step in steps:
-                print(step)
-                if lookup_statements(step):
-                    print(step.run())
-                else:
-                    print("nothing to do...")
-                # fun = Statement.lookup(step.get_step())
-                # step.set_statement(fun)
-            #     for exp, fun in Statement.get_statements():
-
-            print("total steps =",len(steps))
-
-        # for s in t.get_steps():
-        #     print s
-
-        raise SystemExit
-        # steps = read()
-        # if len(steps) == 0:
-        #     raise Exception("Nothing to build")
+        # Read guide and fetch all steps to run
+        steps, topic = parse_guide(args)
+        if topic is None or len(steps) == 0:
+            raise Exception("Nothing to build")
 
         # Run all build steps
-        # run(steps)
+        run_topic(steps, topic)
 
     except Exception as e:
         error = e
 
     # Free lock file
-    # unlock()
+    unlock()
 
     # Throw any errors found...
     if error is not None:
         raise Console.fatal(error)
 
-def lookup_statements(step):
-    for exp, fun in Statement.get_statements():
-        args = exp.match(step.get_step())
-        if args is not None:
-            step.set_statement(fun)
-            step.set_arguments(args.groups())
-            return True
-    return False
+def run_topic(steps, topic):
+    print("\nPreparing to run steps for topic:")
+    print("\033[92m%s\033[0m\n" % topic.get_title().upper())
+    for i, step in enumerate(steps):
+        print("Running step #%d\n---> \033[93m%s\033[0m" % (i+1, step.get_step()))
+        print("     \033[95m%s\033[0m\n" % step.get_description())
 
-def read_steps(topics):
-    user_input = raw_input("Run by id or by topic name: ")
+def parse_guide(args):
+    rr = ReadmeReader(validate=True)
+    rr.read()
+    rr.parse()
+
+    # Preview scanned guide
+    if args.preview:
+        rr.preview(150)
+
+    # Scan guide for topics
+    if args.topic is None:
+        guide = rr.get_guide()
+    else:
+        guide = rr.get_guide_by_topic()
+    if guide is None:
+        raise ValueError("Guide has no such topic")
+
+    # Scan topics
+    topic = None
+    topics = [t.get_title() for t in guide.get_topics()]
+    topics_len = len(topics)
+    steps = []
+
+    # Handle topics
+    if topics_len == 0:
+        print("No topics found!")
+    else:
+        print("Found the following topics:")
+        for pos, name in enumerate(topics):
+            print(("%" + str(len(str(topics_len))+1) + "d) %s") % (pos+1, name))
+        print("\nChoose a topic to run, either by it's ID or by name.")
+        print("Exit with ^C or leave field blank and press return.\n--\n")
+        topic = get_topic(guide.get_topics())
+        steps = topic.get_steps()
+        Matcher.pair_all(steps)
+
+    # Returns steps
+    return steps, topic
+
+def get_topic(topics):
+    try:
+        user_input = raw_input("> ")
+    except KeyboardInterrupt:
+        raise Exception("Program exits...")
+    if len(user_input) == 0:
+        raise Exception("Nothing to do...")
     try:
         pos = int(user_input)
         if pos <= 0 or pos > len(topics):
-            raise Exception
-        return topics[pos-1].get_steps()
-    except Exception as e:
+            raise IndexError
+        return topics[pos-1]
+    except IndexError:
+        return read_steps(topics)
+    except Exception:
         pass
     try:
         topic = unicode(user_input)
+        partial_match = None
+        drop_partial = False
         for each in topics:
-            if each.get_title() == topic:
-                return each.get_steps()
-    except Exception as e:
+            if each.get_title().strip() == topic.strip():
+                return each
+            if partial_match is not None and each.get_title().startswith(topic) and not drop_partial:
+                drop_partial = True
+            if partial_match is None and each.get_title().startswith(topic):
+                partial_match = each
+        if not drop_partial and partial_match is not None:
+            return partial_match
+    except Exception:
         pass
-    return []
+    return read_steps(topics)

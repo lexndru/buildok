@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from buildok.parser import Parser
+
 
 class Action(object):
     """Action statement base handler.
@@ -68,7 +70,7 @@ class Action(object):
         self.failed = False
         self.output = message
 
-    def failed(self, message=""):
+    def fail(self, message=""):
         """Flag action as being failed.
 
         Args:
@@ -96,18 +98,22 @@ class Action(object):
         raise NotImplementedError("Class must implement this method")
 
     @classmethod
+    def parse_description(cls, fallback_msg="No description"):
+        """Action handler description.
+
+        Returns:
+            str: First line from docstring or fallback message.
+        """
+        try:
+            return cls.__doc__.splitlines()[0]
+        except IndexError:
+            return fallback_msg
+
+    @classmethod
     def parse_statements(cls):
         """Docstring parser.
 
         Returns:
             list: List of statements extracted from action handler.
         """
-        start_line = -1
-        doc = unicode(cls.__doc__).splitlines()
-        for idx, line in enumerate(doc):
-            text = line.strip()
-            if start_line > -1 and not text:
-                return doc[start_line+1:idx]
-            if text.lower().startswith(cls.doc_header):
-                start_line = idx
-        return []
+        return Parser.lookahead(unicode(cls.__doc__), cls.doc_header)

@@ -59,8 +59,8 @@ class KillProcess(Action):
             kill(int(pid), SIGTERM)
             self.susccess("Terminated process PID => %s" % pid)
         except OSError as e:
-            self.failed(str(e))
+            self.fail(str(e))
         except ValueError as e:
-            self.failed(str(e))
+            self.fail(str(e))
         except CalledProcessError as e:
-            self.failed(str(e))
+            self.fail(str(e))

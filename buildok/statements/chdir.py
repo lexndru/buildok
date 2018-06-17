@@ -51,4 +51,4 @@ class ChangeDir(Action):
             chdir(path)
             self.success("Changed directory => %s" % path)
         except Exception as e:
-            self.failed(str(e))
+            self.fail(str(e))
