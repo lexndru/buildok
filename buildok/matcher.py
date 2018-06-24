@@ -22,9 +22,21 @@ from buildok.statement import Statement
 
 
 class Matcher(object):
+    """A small wrapper to pair statements and steps.
+
+    Requires statements to be processed before running matching algorithm.
+    """
 
     @classmethod
     def is_valid(cls, text_step):
+        """Check if step is supported by statements.
+
+        Args:
+            text_step (str): Text string of step to check.
+
+        Returns:
+            bool: True if statements have support for step.
+        """
         step = text_step.strip()
         if len(step) == 0:
             return False
@@ -35,10 +47,26 @@ class Matcher(object):
 
     @classmethod
     def pair_all(cls, instructions):
+        """Loop through all instructions and pair each step.
+
+        Args:
+            instructions (list): List of instructions.
+
+        Returns:
+            bool: True if all steps have been paired successfully.
+        """
         return all([cls.pair_one(i) for i in instructions])
 
     @classmethod
     def pair_one(cls, instruction):
+        """Pair instruction with statement.
+
+        Args:
+            instruction (Instruction): An instruction instance to pair.
+
+        Returns:
+            bool: True if instruction has a pair whitin statements.
+        """
         for exp, fun in Statement.get_statements():
             args = exp.match(instruction.get_step())
             if args is not None:

@@ -66,6 +66,11 @@ class Shell(object):
             "dest": "preview",
             "help": "visual preview of scanned guide"
         },
+        (None, "--install-policy"): {
+            "action": "store",
+            "dest": "install_policy",
+            "help": "set or install a system utility policy"
+        },
     }
 
     @classmethod

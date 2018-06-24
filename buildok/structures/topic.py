@@ -92,6 +92,20 @@ class Topic(object):
         """
         return self.title
 
+    def has_step(self, step):
+        """Lookup step string in steps list.
+
+        Args:
+            step (str): Step string to lookup.
+
+        Returns:
+            bool: True if step exists, otherwise False.
+        """
+        for s in self.steps:
+            if s.get_step().lower() == step.lower():
+                return True
+        return False
+
     def add_step(self, step):
         """Appends step to topic instance.
 

@@ -66,6 +66,17 @@ class Guide(object):
         """
         return self.topics
 
+    def get_topic_by_title(self, title):
+        """Lookup topic by title and return instance.
+
+        Returns:
+            mixt: Instance of topic or None.
+        """
+        for t in self.topics:
+            if t.get_title().lower() == title.lower():
+                return t
+        return None
+
     @classmethod
     def get_all_guides(cls):
         """Return stored guide instances.

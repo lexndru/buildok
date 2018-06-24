@@ -134,13 +134,16 @@ class Reader(object):
             self.line = self.content[self.cursor]
         return more_lines
 
-    def get_line(self):
+    def get_line(self, strip=False):
         """Get current line read.
+
+        Args:
+            strip (bool): Strips text of whitespace if True.
 
         Returns:
             str: Current line from build file.
         """
-        return self.line
+        return self.line.strip() if strip else self.line
 
     def get_line_number(self):
         """Get current line number.

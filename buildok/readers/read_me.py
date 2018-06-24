@@ -38,6 +38,7 @@ class ReadmeReader(Reader):
         last_step (Instruction): Last Instruction instance.
         delimiter         (str): Payload delimiter.
         recent_topic      (str): Holder for recent topic.
+        no_topic_skip    (bool): Skip instruction if topic is missing.
     """
 
     READER = r"README.md"
@@ -59,18 +60,25 @@ class ReadmeReader(Reader):
     last_step = None
 
     recent_topic = "n/a"
+    no_topic_skip = True
 
     delimiter = r"```"
     __topicre = Topic.prepare(r"## how to (?P<topic>[\s\w\-]+)")
 
-    def parse(self):
+    def parse(self, newlines=0):
         """Parse build steps file.
 
         Loop through all steps and check for topics and instructions.
         """
         self.last_guide = Guide()
         while self.has_next():
-            line = self.get_line()
+            line = self.get_line(strip=True)
+            if len(line) == 0:
+                newlines += 1
+            else:
+                newlines = 0
+            if newlines >= 2:
+                self.last_topic = None
             self.check_topic(line)
             self.check_instruction(line).check_payload(self.next_content())
             self.next_line()
@@ -124,6 +132,9 @@ class ReadmeReader(Reader):
         Returns:
             self: Self instance.
         """
+        if self.no_topic_skip and self.last_topic is None:
+            self.last_step = None
+            return self
         scan = Instruction.PATTERN.match(line)
         if scan is not None:
             step = scan.group("step")
@@ -180,11 +191,13 @@ class ReadmeReader(Reader):
         line_step = Instruction.PATTERN.match(line)
         if line_step is not None:
             step = line_step.group("step")
-            if Matcher.is_valid(step):
-                line_desc = "instruction (%s)" % self.recent_topic
-                method = "yellow"
-            else:
-                line_desc = "unsupported instruction (%s)" % self.recent_topic
-                method = "red"
-            return getattr(Console, method)(preview_line, "<--- %s" % line_desc)
+            topic = self.last_guide.get_topic_by_title(self.recent_topic)
+            if topic.has_step(step):
+                if Matcher.is_valid(step):
+                    line_desc = "instruction (%s)" % self.recent_topic
+                    method = "yellow"
+                else:
+                    line_desc = "unsupported instruction (%s)" % self.recent_topic
+                    method = "red"
+                return getattr(Console, method)(preview_line, "<--- %s" % line_desc)
         return Console.darkgray(preview_line)
