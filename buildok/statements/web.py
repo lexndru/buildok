@@ -52,3 +52,9 @@ class ViewWeb(Action):
             self.success("Opened URL in browser => %s" % url)
         except TypeError as e:
             self.fail(str(e))
+
+    @classmethod
+    def _convert_bash(cls, url=None, *args, **kwargs):
+        if url is None:
+            return "echo cannot open browser"
+        return "echo cannot open url in browser: %s" % url

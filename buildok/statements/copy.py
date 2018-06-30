@@ -62,3 +62,16 @@ class Copy(Action):
                 copy_tree(item, dst)
                 folders += 1
         self.success("Copied => %d file(s) %d dir(s)" % (files, folders))
+
+    @classmethod
+    def _convert_bash(cls, src=None, dst=None, *args, **kwargs):
+        if src is None and dst is None:
+            return "echo invalid copy command"
+        elif src is None:
+            src = "."
+        elif dst is None:
+            dst = "."
+        flags = kwargs.get("flags", "")
+        if os.path.isdir(src):
+            flags = " -R"
+        return "cp%s %s %s" % (flags, src, dst)

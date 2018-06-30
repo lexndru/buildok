@@ -53,7 +53,7 @@ class KillProcess(Action):
     def run(self, pid=None, pname=None, *args, **kwargs):
         try:
             if pname is not None:
-                pid = check_output(["pidof", "-s", name])
+                pid = check_output(["pidof", "-s", pname])
             if pid is None:
                 raise ValueError("Invalid PID")
             kill(int(pid), SIGTERM)
@@ -64,3 +64,11 @@ class KillProcess(Action):
             self.fail(str(e))
         except CalledProcessError as e:
             self.fail(str(e))
+
+    @classmethod
+    def _convert_bash(cls, pid=None, pname=None, *args, **kwargs):
+        if pid is not None:
+            return "kill %s" % pid
+        elif pname is not None:
+            return "kill `pidof %s`" % pname
+        return "echo cannot kill process because of invalid or missing pid"

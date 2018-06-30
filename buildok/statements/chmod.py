@@ -61,3 +61,12 @@ class ChangeMod(Action):
             self.fail(str(e))
         except TypeError as e:
             self.fail(str(e))
+
+    @classmethod
+    def _convert_bash(cls, mode="400", path=None, *args, **kwargs):
+        if path is None:
+            path = "."
+        flags = kwargs.get("flags", "")
+        if os.path.isdir(path):
+            flags = " -R"
+        return "chmod%s %s %s" % (flags, mode, path)

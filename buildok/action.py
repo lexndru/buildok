@@ -119,6 +119,20 @@ class Action(object):
         """
         raise NotImplementedError("Class must implement this method")
 
+    def before_run(self, *args, **kwargs):
+        """Action handler prehook.
+
+        Runs before an action handler.
+        """
+        pass
+
+    def after_run(self, *args, **kwargs):
+        """Action handler posthook.
+
+        Runs after an action handler.
+        """
+        pass
+
     def test(self, *args, **kwargs):
         """Action handler testable.
 

@@ -20,8 +20,7 @@
 
 import os
 
-from buildok.converters.bash import unpack_bash
-from buildok.util.console import Console
+from buildok.converters.bash import BashConverter
 
 
 class Converter(object):
@@ -30,17 +29,19 @@ class Converter(object):
     Used as a converter wrapper for multiple scriping files.
 
     Args:
-        workdir (str): Working directory.
-        target (tuple): Unpacked holder for script parameters.
-        statements (frozenset): Set of all known statements.
+        workdir     (str): Working directory.
+        conv_target (str): Choosen target to convert.
+        tpl_target  (str): Unpacked holder for script parameters.
     """
+
+    target_name, target_class = None, None
     workdir = os.getcwd()
-    target, statements = None, None
+    prefix = "_convert_"
 
     @classmethod
-    def prepare(cls, target, statement):
+    def prepare(cls, target):
         if target == "bash":
-            cls.target = unpack_bash()
+            cls.target_class = BashConverter
         elif target == "vagrant":
             raise Exception("Unsupported yet: %s" % target)
         elif target == "docker":
@@ -51,21 +52,25 @@ class Converter(object):
             raise Exception("Unsupported yet: %s" % target)
         else:
             raise Exception("Unsupported target: %s" % target)
-        cls.statements = statement.get_actions()
+        cls.target_name = target
 
     @classmethod
     def check(cls):
-        return cls.target is not None and len(cls.statements) > 0
+        return cls.target_name is not None and cls.target_class is not None
 
     @classmethod
-    def save(cls, lines=[]):
-        lang, fname, template = cls.target
-        for s in cls.statements:
-            func = lang.get(s.stmt.__name__)
-            if not callable(func):
+    def save(cls, steps):
+        lines = []
+        method = "%s%s" % (cls.prefix, cls.target_name)
+        for step in steps:
+            if not hasattr(step.action, method):
                 continue
-            lines.append(func(**s.args))
-        with open(os.path.join(cls.workdir, fname), "w") as file_:
-            data = template.format("\n".join(lines))
+            if not isinstance(step.args, tuple):
+                step.args = ()
+            func = getattr(step.action, method)
+            comment = "\n# %s" % step.step
+            cmdline = func(*step.args, payload=step.payload)
+            lines.append("%s\n%s" % (comment, cmdline))
+        with open(os.path.join(cls.workdir, cls.target_class.filename), "w") as file_:
+            data = cls.target_class.template.format(body="\n".join(lines))
             file_.write(data)
-        Console.info("Converted %d steps to %s file" % (len(lines), fname))

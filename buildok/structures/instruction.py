@@ -236,8 +236,10 @@ class Instruction(object):
         handler, args = self.action(), self.args
         if not isinstance(args, tuple):
             args = ()
+        handler.before_run()
         handler.set_payload(self.payload)
         handler.run(*args)
+        handler.after_run()
         return handler.get_status()
 
     def __repr__(self):

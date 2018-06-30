@@ -47,8 +47,16 @@ class ChangeDir(Action):
     """
 
     def run(self, path=None, *args, **kwargs):
+        if path is None:
+            path = "."
         try:
             chdir(path)
             self.success("Changed directory => %s" % path)
         except Exception as e:
             self.fail(str(e))
+
+    @classmethod
+    def _convert_bash(cls, path=None, *args, **kwargs):
+        if path is None:
+            path = "."
+        return "cd %s" % path

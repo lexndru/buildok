@@ -52,3 +52,9 @@ class GoogleSearch(Action):
             self.success("Opened URL in browser => %s" % url)
         except TypeError as e:
             self.fail(str(e))
+
+    @classmethod
+    def _convert_bash(cls, search=None, *args, **kwargs):
+        if search is None:
+            return "echo Cannot google search"
+        return "echo Cannot google search for: %s" % search

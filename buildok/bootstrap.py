@@ -55,8 +55,7 @@ def main(error=None):
     try:
 
         # Parse guide and run all steps
-        guide_script.parse()
-        guide_script.run()
+        guide_script.parse().run()
 
     except Exception as e:
         error = e

@@ -50,3 +50,9 @@ class Touch(Action):
             self.success("Created file => %s" % filepath)
         except Exception as e:
             self.fail(str(e))
+
+    @classmethod
+    def _convert_bash(cls, filepath=None, *args, **kwargs):
+        if filepath is None:
+            return "echo invalid touch call"
+        return "touch %s" % filepath

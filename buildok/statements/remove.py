@@ -59,3 +59,16 @@ class Remove(Action):
             self.success("Removed => %s" % src)
         except OSError as e:
             self.fail(str(e))
+
+    @classmethod
+    def _convert_bash(cls, src=None, *args, **kwargs):
+        flags = kwargs.get("flags", "")
+        if src is None:
+            src = "."
+        if os.path.isdir(src):
+            flags = " -r"
+        if flags == "":
+            flags = " -f"
+        else:
+            flags += "f"
+        return "rm%s %s 2> /dev/null" % (flags, src)

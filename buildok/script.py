@@ -42,6 +42,7 @@ class Script(object):
         steps        (list): List of topic steps.
         last_step     (int): Last step index.
         guide_topics (list): List of guide topics.
+        convert      (bool): Convertion flag.
     """
 
     def __init__(self, args):
@@ -50,6 +51,7 @@ class Script(object):
         self.steps = None
         self.last_step = 0
         self.guide_topics = None
+        self.convert = False
 
     def setup(self):
         """Setup project path, topic and topic pattern, convertion type.
@@ -69,15 +71,25 @@ class Script(object):
 
         # Convert build steps to script before exit
         if self.args.convert is not None:
-            Converter.prepare(self.args.convert, Statement)
+            Converter.prepare(self.args.convert)
+            self.convert = True
 
     def run(self):
         """Run all steps for the current selected topic.
+
+        Args:
+            convert (bool): Whether to convert steps before exist or not.
         """
 
         failed = False
-        print("\nPreparing to run steps for topic:")
-        print("\033[92m%s\033[0m\n" % self.topic.get_title().upper())
+        selected_topic = self.topic.get_title()
+        alert_text = "Preparing to run:"
+        title_len = len(alert_text) + len(selected_topic)
+        print("")
+        print("-" * (title_len + 1))
+        print(u"%s \033[92m%s\033[0m" % (alert_text, selected_topic))
+        print("-" * (title_len + 1))
+        print("")
 
         # Loop steps and run each one
         start_time = timeit.default_timer()
@@ -111,6 +123,10 @@ class Script(object):
         else:
             print("Topic '%s' has ran all steps with no errors" % self.topic.get_title())
             Report.set_status("OK")
+        if self.convert:
+            print("Converting...")
+            Converter.check() and Converter.save(self.steps)
+            print("Conversion done!")
         print("Closing...")
 
     def parse(self):
@@ -148,12 +164,19 @@ class Script(object):
             print(("%" + str(len(str(topics_len))+1) + "d) %s") % (pos+1, name))
         print("\nChoose a topic to run, either by it's ID or by name.")
         print("Exit with ^C or leave field blank and press return.\n--\n")
+
+        # Save topic and topic's steps
         self.guide_topics = guide.get_topics()
         self.topic = self.get_user_input()
         self.steps = self.topic.get_steps()
+
+        # Pair each step with appropriate statement
         Matcher.pair_all(self.steps)
+
+        # Prepare report
         Report.set_total_steps(len(self.steps))
         Report.set_topic(self.topic.get_title())
+        return self
 
     def get_user_input(self):
         """Prompt user to choose a topic from a list.
@@ -208,7 +231,7 @@ class Script(object):
         return self.get_user_input()
 
     def print_report(self):
-        """Dumps a report of the script outcome. 
+        """Dumps a report of the script outcome.
         """
         print("\nPreparing to print report...\n")
         Report.output()

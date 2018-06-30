@@ -54,3 +54,9 @@ class ShellExec(Action):
             self.success("no error")
         else:
             self.success(output.decode('utf-8').strip())
+
+    @classmethod
+    def _convert_bash(cls, cmd=None, *args, **kwargs):
+        if cmd is None:
+            return "echo invalid or missing cmd"
+        return cmd

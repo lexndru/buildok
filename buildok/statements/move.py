@@ -56,3 +56,13 @@ class Move(Action):
             self.success("Moved %s => %s" % (src, dst))
         except OSError as e:
             self.fail(str(e))
+
+    @classmethod
+    def _convert_bash(cls, src=None, dst=None, *args, **kwargs):
+        if src is None and dst is None:
+            return "echo invalid move command"
+        elif src is None:
+            src = "."
+        elif dst is None:
+            dst = "."
+        return "mv %s %s" % (src, dst)

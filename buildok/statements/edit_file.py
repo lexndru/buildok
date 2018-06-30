@@ -56,3 +56,10 @@ class EditFile(Action):
             self.success("Changed %d line(s) of content => %s" % (lines, filepath))
         except Exception as e:
             self.fail(str(e))
+
+    @classmethod
+    def _convert_bash(cls, filepath=None, *args, **kwargs):
+        if filepath is None:
+            return "echo cannot edit file because of an invalid filepath"
+        payload = kwargs.get("payload", "n/a")
+        return "cat <<EOF > %s\n%s\nEOF" % (filepath, payload)

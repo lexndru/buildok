@@ -80,3 +80,18 @@ class ChangeOwner(Action):
                 self.success("Changed ownwer:group %s:%s => %s" % (owner, group, path))
         except OSError as e:
             self.fail(str(e))
+
+    @classmethod
+    def _convert_bash(cls, owner=None, group=None, path=None, *args, **kwargs):
+        if path is None:
+            path = "."
+        flags = kwargs.get("flags", "")
+        if os.path.isdir(path):
+            flags = " -R"
+        if owner is not None and group is not None:
+            return "chown%s %s:%s %s" % (flags, owner, group, path)
+        elif owner is None and group is not None:
+            return "chgrp%s %s %s" % (flags, group, path)
+        elif owner is not None and group is None:
+            return "chown%s %s %s" % (flags, owner, path)
+        return 'echo "cannot chown: missing owner and/or group"'
