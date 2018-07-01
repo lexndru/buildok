@@ -18,17 +18,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from os import environ
+
 from buildok.statement import Statement
 from buildok.script import Script
 from buildok.report import Report
+from buildok.action import Action
 
 from buildok.util.console import Console
 from buildok.util.shell import Shell
 from buildok.util.analyze import self_analyze, analyze, crash
 from buildok.util.locker import lock, unlock
+from buildok.util.sysenv import Sysenv
 
 
-def main(error=None):
+def main(version, error=None):
+
+    # System check
+    Sysenv.check(version)
 
     # Parse command line args
     args = Shell.parse()
@@ -46,6 +53,9 @@ def main(error=None):
     # Self-analyze buildok and continue or crash
     self_analyze(None, Statement) or crash("Run an analyze and correct problems")
 
+    # Attach system environment to all actions
+    Action.set_env(Sysenv)
+
     # Initialize script and run all steps
     guide_script = Script(args)
     guide_script.setup()
@@ -58,7 +68,8 @@ def main(error=None):
         guide_script.parse().run()
 
     except Exception as e:
-        error = e
+        if str(e) != "":
+            error = e
 
     # Free lock file
     unlock()
@@ -67,5 +78,5 @@ def main(error=None):
     guide_script.print_report()
 
     # Throw any errors found...
-    if error is not None:
+    if environ.get("DEBUG") is not None and error is not None:
         raise Console.fatal(error)

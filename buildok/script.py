@@ -74,7 +74,7 @@ class Script(object):
             Converter.prepare(self.args.convert)
             self.convert = True
 
-    def run(self):
+    def run(self, ignore_fails=False):
         """Run all steps for the current selected topic.
 
         Args:
@@ -103,6 +103,10 @@ class Script(object):
                     print(u"   \033[92m\u2713 (OK) %s\033[0m" % output)
                 else:
                     print(u"   \033[91m? (Failed) %s\033[0m" % output)
+                    if not ignore_fails:
+                        failed = True
+                        Report.set_error(output)
+                        break
                 Report.inc_step(1)
             except Exception as e:
                 failed = True
@@ -123,11 +127,11 @@ class Script(object):
         else:
             print("Topic '%s' has ran all steps with no errors" % self.topic.get_title())
             Report.set_status("OK")
-        if self.convert:
+        if self.convert and not failed:
             print("Converting...")
             Converter.check() and Converter.save(self.steps)
             print("Conversion done!")
-        print("Closing...")
+        print("Closing...\n--")
 
     def parse(self):
         """Parse guide and extract topics.

@@ -34,6 +34,7 @@ from buildok.statements.move import Move
 from buildok.statements.remove import Remove
 from buildok.statements.touch import Touch
 from buildok.statements.edit_file import EditFile
+from buildok.statements.install import InstallPackage
 
 
 class Statement(object):
@@ -46,20 +47,21 @@ class Statement(object):
     """
 
     __actions = {
-        ChangeDir,    # Change current working directory.
-        MakeDir,      # Make a directory or make recursive directories.
-        MakeSymlink,  # Make a symlink for a target source
-        ViewWeb,      # Open a link in default browser.
-        GoogleSearch, # Perform a Google search and open default browser.
-        ShellExec,    # Run a command in shell.
-        ChangeMod,    # Change permissions on file or directory.
-        ChangeOwner,  # Change owner and group on file or directory.
-        Copy,         # Copy files from a given source to a given destination.
-        Move,         # Move files from a given source to a given destination.
-        Remove,       # Remove files from a given source.
-        KillProcess,  # Send SIGTERM signal to a process.
-        Touch,        # Create a new file.
-        EditFile,     # Edit content of an existing file.
+        ChangeDir,      # Change current working directory.
+        MakeDir,        # Make a directory or make recursive directories.
+        MakeSymlink,    # Make a symlink for a target source
+        ViewWeb,        # Open a link in default browser.
+        GoogleSearch,   # Perform a Google search and open default browser.
+        ShellExec,      # Run a command in shell.
+        ChangeMod,      # Change permissions on file or directory.
+        ChangeOwner,    # Change owner and group on file or directory.
+        Copy,           # Copy files from a given source to a given destination.
+        Move,           # Move files from a given source to a given destination.
+        Remove,         # Remove files from a given source.
+        KillProcess,    # Send SIGTERM signal to a process.
+        Touch,          # Create a new file.
+        EditFile,       # Edit content of an existing file.
+        InstallPackage  # Install new package software.
     }
 
     statements = {}

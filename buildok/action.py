@@ -26,6 +26,7 @@ class Action(object):
 
     Arguments:
         header (str): Lookup docstring header.
+        env (Sysenv): System environment instance.
 
     Args:
         output  (str): Output status message.
@@ -36,12 +37,24 @@ class Action(object):
         any: Any exception raised by action handler
     """
 
+    env = None
     doc_header = r"accepted statements"
 
     def __init__(self, payload=None):
         self.payload = payload
         self.output = ""
         self.failed = None
+
+    @classmethod
+    def set_env(cls, env):
+        """System environment setter.
+
+        Args:
+            env (Sysenv): System environment instance.
+        """
+        if not callable(env):
+            raise TypeError("Expected sysenv instance, got something else")
+        cls.env = env
 
     def get_status(self):
         """Action status getter.
