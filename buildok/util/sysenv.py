@@ -44,16 +44,16 @@ class Sysenv(object):
             raise SystemExit("Invalid launch")
 
         # Buildok version header
-        print("buildok v%s" % version)
+        header = "buildok v%s @ " % version
 
         # Basic support for windows systems
         if system().lower() == "windows":
-            print(u"\033[92mwindows\033[0m system detected")
+            header += u"\033[92mwindows\033[0m system"
             cls.OS_NAME = "win"
 
         # Extended support for macos systems
         elif system().lower() == "darwin":
-            print(u"\033[92mmacintosh\033[0m system detected")
+            header += u"\033[92mmacintosh\033[0m system"
             cls.OS_NAME = "mac"
 
         # Full support for linux systems
@@ -70,12 +70,12 @@ class Sysenv(object):
                     if line.lower().startswith("pretty_name") and pretty_name == "":
                         _, pretty_name = line.split("=", 1)
             os_name = distro.strip()
-            print(u"\033[92m%s\033[0m system detected (%s)" % (os_name, pretty_name.strip()))
+            header += u"\033[92m%s\033[0m system (%s)" % (os_name, pretty_name.strip())
             cls.OS_NAME = os_name
 
         # Extended or full support for bsd systems
         elif "bsd" in system().lower():
-            print(u"\033[92mbsd\033[0m system detected")
+            header +=  u"\033[92mbsd\033[0m system"
             cls.OS_NAME = "bsd"
 
-        print("--\n")
+        print("%s\n--" % header)

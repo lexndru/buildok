@@ -35,6 +35,7 @@ from buildok.statements.remove import Remove
 from buildok.statements.touch import Touch
 from buildok.statements.edit_file import EditFile
 from buildok.statements.install import InstallPackage
+# from buildok.statements.invoke import InvokeTopic
 
 
 class Statement(object):
@@ -61,7 +62,8 @@ class Statement(object):
         KillProcess,    # Send SIGTERM signal to a process.
         Touch,          # Create a new file.
         EditFile,       # Edit content of an existing file.
-        InstallPackage  # Install new package software.
+        InstallPackage, # Install new package software.
+        # InvokeTopic,    # Invoke new topic from guide.
     }
 
     statements = {}

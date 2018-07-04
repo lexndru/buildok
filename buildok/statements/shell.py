@@ -48,12 +48,12 @@ class ShellExec(Action):
     def run(self, cmd=None, *args, **kwargs):
         try:
             output = check_output(cmd.split(), stderr=STDOUT)
+            if output is None:
+                self.success("no error")
+            else:
+                self.success(output.decode('utf-8').strip())
         except CalledProcessError as e:
             self.fail(e.output)
-        if output is None:
-            self.success("no error")
-        else:
-            self.success(output.decode('utf-8').strip())
 
     @classmethod
     def _convert_bash(cls, cmd=None, *args, **kwargs):
