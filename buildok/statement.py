@@ -35,7 +35,7 @@ from buildok.statements.remove import Remove
 from buildok.statements.touch import Touch
 from buildok.statements.edit_file import EditFile
 from buildok.statements.install import InstallPackage
-# from buildok.statements.invoke import InvokeTopic
+from buildok.statements.invoke import InvokeTopic
 
 
 class Statement(object):

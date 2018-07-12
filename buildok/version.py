@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2018 Alexandru Catrina
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,8 +18,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from buildok.bootstrap import main
 
-
-if __name__ == "__main__":
-    main()
+__version__ = "0.3.0"

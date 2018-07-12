@@ -20,6 +20,8 @@
 
 from os import environ
 
+from buildok.version import __version__
+
 from buildok.statement import Statement
 from buildok.script import Script
 from buildok.report import Report
@@ -32,10 +34,10 @@ from buildok.util.locker import lock, unlock
 from buildok.util.sysenv import Sysenv
 
 
-def main(version, error=None):
+def main(error=None):
 
     # System check
-    Sysenv.check(version)
+    Sysenv.check(__version__)
 
     # Parse command line args
     args = Shell.parse()

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2018 Alexandru Catrina
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,8 +18,44 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from buildok.bootstrap import main
+from buildok.action import Action
+
+from buildok.structures.topic import Topic
 
 
-if __name__ == "__main__":
-    main()
+class InvokeTopic(Action):
+    r"""Invoke another topic from guide.
+
+    Args:
+        topic (str): Topic complete name to invoke.
+
+    Retuns:
+        str: Human readable descriptor message or error.
+
+    Raises:
+        Exception: If an invalid `topic` is provided.
+
+    Accepted statements:
+        ^read (?:steps from )?topic `(?P<topic>.+)`$
+        ^continue reading topic `(?P<topic>.+)`$
+        ^follow steps from `(?P<topic>.+)`$
+
+    Sample input:
+        1) Follow steps from `do something else`.
+
+    Expected:
+        Running new topic => do something else
+    """
+
+    def run(self, topic=None, *args, **kwargs):
+        
+        for step in self.get_steps_by_topic(topic):
+            print step.action
+        self.success("OK")
+        self.fail("noononono")
+
+    def get_steps_by_topic(self, topic):
+        for t in Topic.get_all_topics():
+            if topic.lower() == t.get_title().lower():
+                return t.get_steps()
+        return []

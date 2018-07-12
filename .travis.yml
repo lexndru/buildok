@@ -1,6 +1,6 @@
 language: python
 
-go:
+python:
   - 2.7
 
 git:
