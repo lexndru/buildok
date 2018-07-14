@@ -18,45 +18,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import makedirs, path as fpath
-
 from buildok.action import Action
 
 
-class MakeDir(Action):
-    r"""Make a directory or make recursive directories.
-
-    Args:
-        path (str): Path to directory.
+class Noop(Action):
+    r"""No operation; nothing to do.
 
     Retuns:
-        str: Human readable descriptor message or error.
-
-    Raises:
-        OSError: If an invalid `path` is provided or if path already exists.
+        str: Output as string.
 
     Accepted statements:
-        ^create (?:folder|directory) `(?P<path>.+)`$
-        ^make new (?:folder|directory) `(?P<path>.+)`$
+        ^nothing (?:else |more )?to do$
+        ^done$
+        ^that's all folks$
 
     Sample input:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder`.
+        1) Nothing to do.
 
     Expected:
-        Created new directory => buildok_test_folder
+        Noop
     """
 
-    def run(self, path=None, *args, **kwargs):
-        try:
-            if not fpath.isdir(path):
-                makedirs(path)
-            self.success("Created new directory => %s" % path)
-        except OSError as e:
-            self.fail(str(e))
-
-    @classmethod
-    def _convert_bash(cls, path=None, *args, **kwargs):
-        if path is not None:
-            return "mkdir -p %s" % path
-        return "echo cannot create folder because of invalid path"
+    def run(self, *args, **kwargs):
+        self.success("Noop")

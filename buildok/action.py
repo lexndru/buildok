@@ -52,6 +52,7 @@ class Action(object):
         Args:
             env (Sysenv): System environment instance.
         """
+
         if not callable(env):
             raise TypeError("Expected sysenv instance, got something else")
         cls.env = env
@@ -62,6 +63,7 @@ class Action(object):
         Returns:
             tuple: Boolean if succeded or failed; and output message.
         """
+
         return (not self.failed, self.output)
 
     def get_output(self):
@@ -70,6 +72,7 @@ class Action(object):
         Returns:
             str: Output message.
         """
+
         return self.output
 
     def set_output(self, message):
@@ -78,6 +81,7 @@ class Action(object):
         Args:
             message (str): Output message.
         """
+
         self.output = message
 
     def get_payload(self):
@@ -86,6 +90,7 @@ class Action(object):
         Returns:
             str: Payload input message.
         """
+
         return self.payload
 
     def set_payload(self, payload):
@@ -94,6 +99,7 @@ class Action(object):
         Args:
             payload (str): Payload input message.
         """
+
         self.payload = payload
 
     def success(self, message=""):
@@ -102,6 +108,7 @@ class Action(object):
         Args:
             message (str): Optional message to describe output.
         """
+
         self.failed = False
         self.output = message
 
@@ -111,6 +118,7 @@ class Action(object):
         Args:
             message (str): Optional message to describe output.
         """
+
         self.failed = True
         self.output = message
 
@@ -120,6 +128,7 @@ class Action(object):
         Returns:
             bool: True if failed, else False.
         """
+
         return self.failed
 
     def run(self, *args, **kwargs):
@@ -130,6 +139,7 @@ class Action(object):
         Raises:
             NotImplementedError: If not implemented.
         """
+
         raise NotImplementedError("Class must implement this method")
 
     def before_run(self, *args, **kwargs):
@@ -137,6 +147,7 @@ class Action(object):
 
         Runs before an action handler.
         """
+
         pass
 
     def after_run(self, *args, **kwargs):
@@ -144,6 +155,7 @@ class Action(object):
 
         Runs after an action handler.
         """
+
         pass
 
     def test(self, *args, **kwargs):
@@ -154,6 +166,7 @@ class Action(object):
         Raises:
             NotImplementedError: If not implemented.
         """
+
         raise NotImplementedError("Class must implement this method")
 
     @classmethod
@@ -163,6 +176,7 @@ class Action(object):
         Returns:
             str: First line from docstring or fallback message.
         """
+
         try:
             return cls.__doc__.splitlines()[0]
         except IndexError:
@@ -175,4 +189,5 @@ class Action(object):
         Returns:
             list: List of statements extracted from action handler.
         """
+
         return Parser.lookahead(unicode(cls.__doc__), cls.doc_header)

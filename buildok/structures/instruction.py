@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import re
+from re import compile, IGNORECASE, UNICODE
 
 
 class Instruction(object):
@@ -35,12 +35,18 @@ class Instruction(object):
         payload     (str): Instruction payload as input.
         action (callable): Action handler from installed statements.
         args      (tuple): Action arguments after applying expression to step.
+        kwargs     (dict): Action keyword arguments after applying expression to step.
+        status     (bool): Instruction status after action handler run.
+        output      (str): Instruction output after action handler run.
 
     Raises:
         TypeError: If invalid datatype is provided.
     """
 
-    PATTERN = re.compile(r"^(?:\-|\d+\))\s+(?P<step>.+)(?<=[^\.\!\?\:\;])(?P<punct>[\.\!\?\:\;]{1})$", re.I|re.U)
+    PATTERN = compile(
+        r"^(?:\-|\d+\))\s+(?P<step>.+)(?<=[^\.\:\;])(?P<punct>[\.\:\;]{1})$",
+        IGNORECASE|UNICODE
+    )
 
     class RunType(object):
         """Statement action punctuation.
@@ -51,24 +57,38 @@ class Instruction(object):
           . = Run statement.
           ; = Run statement and continue only if succeeds.
           : = Run statement with content as input params.
-          ! = Force run statement and exit without warnings.
-          ? = Run statement and exit if succeds, otherwise continue with next step.
         """
 
         END = "."
         AND = ";"
-        XOR = "?"
         ARGS = ":" # has payload
-        SUDO = "!"
 
     def __init__(self, order=None, step=None, punct=None):
         self.order = order
         self.step = step
         self.punct = punct
         self.action = None
-        self.args = None
+        self.args, self.kwargs = None, None
         self.payload = None
         self.description = None
+        self.status = None
+        self.output = None
+
+    def get_status(self):
+        """Instruction status getter.
+
+        Returns:
+            bool: Instruction run status.
+        """
+        return self.status
+
+    def get_output(self):
+        """Instruction output getter.
+
+        Returns:
+            str: Instruction run output.
+        """
+        return self.output
 
     def set_payload(self, payload):
         """Instruction payload setter.
@@ -187,19 +207,40 @@ class Instruction(object):
             value (tuple): Instruction step arguments.
 
         Raises:
-            TypeError: If value is not list.
+            TypeError: If value is not tuple.
         """
         if not isinstance(value, tuple):
             raise TypeError("Step arguments must be tuple")
         self.args = value
 
     def get_arguments(self):
-        """Instruction action statement getter.
+        """Instruction action arguments getter.
 
         Returns:
-            callable: Instruction step handler.
+            tuple: Instruction step arguments.
         """
         return self.args
+
+    def set_kwarguments(self, value):
+        """Instruction action keyword arguments setter.
+
+        Args:
+            value (dict): Instruction step keyword arguments.
+
+        Raises:
+            TypeError: If value is not dict.
+        """
+        if not isinstance(value, dict):
+            raise TypeError("Step arguments must be dict")
+        self.kwargs = value
+
+    def get_kwarguments(self):
+        """Instruction action keyword arguments getter.
+
+        Returns:
+            dict: Instruction step keyword arguments.
+        """
+        return self.kwargs
 
     def set_punctuation(self, value):
         """Instruction punctuation setter.
@@ -233,14 +274,20 @@ class Instruction(object):
         """
         if not callable(self.action):
             raise TypeError("Action is not set")
-        handler, args = self.action(), self.args
-        if not isinstance(args, tuple):
-            args = ()
+        handler = self.action()
         handler.before_run()
         handler.set_payload(self.payload)
-        handler.run(*args)
+        if not isinstance(self.kwargs, dict):
+            self.kwargs = {}
+        if not isinstance(self.args, tuple):
+            self.args = ()
+        if len(self.kwargs) >= len(self.args):
+            handler.run(**self.kwargs)
+        else:
+            handler.run(*self.args)
         handler.after_run()
-        return handler.get_status()
+        self.status, self.output = handler.get_status()
+        return self.status, self.output
 
     def __repr__(self):
         return unicode(self.__dict__)

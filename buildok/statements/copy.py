@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import path
+from os import path as path
 from glob import glob
 from shutil import copy
 from distutils.dir_util import copy_tree
@@ -72,6 +72,6 @@ class Copy(Action):
         elif dst is None:
             dst = "."
         flags = kwargs.get("flags", "")
-        if os.path.isdir(src):
+        if path.isdir(src):
             flags = " -R"
         return "cp%s %s %s" % (flags, src, dst)

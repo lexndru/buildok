@@ -43,8 +43,8 @@ class Console(object):
 
     Attributes:
         start_time (int): Start time of console logging.
-        stop_time (int): Stop time of console logging.
-        verbose (bool): Set verbose level on or off.
+        stop_time  (int): Stop time of console logging.
+        verbose   (bool): Set verbose level on or off.
     """
     start_time, stop_time = 0, 0
     verbose = False

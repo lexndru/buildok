@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import chmod, getcwd
+from os import chmod, getcwd, path as fpath
 
 from buildok.action import Action
 
@@ -67,6 +67,6 @@ class ChangeMod(Action):
         if path is None:
             path = "."
         flags = kwargs.get("flags", "")
-        if os.path.isdir(path):
+        if fpath.isdir(path):
             flags = " -R"
         return "chmod%s %s %s" % (flags, mode, path)

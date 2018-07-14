@@ -18,13 +18,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import re
+from re import compile, IGNORECASE, UNICODE
 
 from buildok.statements.chdir import ChangeDir
 from buildok.statements.mkdir import MakeDir
 from buildok.statements.symlink import MakeSymlink
 from buildok.statements.web import ViewWeb
 from buildok.statements.google import GoogleSearch
+from buildok.statements.duckduckgo import DuckDuckGoSearch
+from buildok.statements.wikipedia import WikipediaSearch
+from buildok.statements.github_search import GitHubSearch
 from buildok.statements.shell import ShellExec
 from buildok.statements.chmod import ChangeMod
 from buildok.statements.chown import ChangeOwner
@@ -36,34 +39,41 @@ from buildok.statements.touch import Touch
 from buildok.statements.edit_file import EditFile
 from buildok.statements.install import InstallPackage
 from buildok.statements.invoke import InvokeTopic
+from buildok.statements.noop import Noop
+
+from buildok.util.log import Log
 
 
 class Statement(object):
     """Statement parser and launcher.
 
     Attributes:
-        __actions (frozen set): Set of all known statements and actions.
-        statements (list): List of all statements.
-        ready      (bool): Setup flag to determine status.
+        actions (frozen set): Set of all known statements and actions.
+        statements    (list): List of all statements.
+        ready         (bool): Setup flag to determine status.
     """
 
     __actions = {
-        ChangeDir,      # Change current working directory.
-        MakeDir,        # Make a directory or make recursive directories.
-        MakeSymlink,    # Make a symlink for a target source
-        ViewWeb,        # Open a link in default browser.
-        GoogleSearch,   # Perform a Google search and open default browser.
-        ShellExec,      # Run a command in shell.
-        ChangeMod,      # Change permissions on file or directory.
-        ChangeOwner,    # Change owner and group on file or directory.
-        Copy,           # Copy files from a given source to a given destination.
-        Move,           # Move files from a given source to a given destination.
-        Remove,         # Remove files from a given source.
-        KillProcess,    # Send SIGTERM signal to a process.
-        Touch,          # Create a new file.
-        EditFile,       # Edit content of an existing file.
-        InstallPackage, # Install new package software.
-        # InvokeTopic,    # Invoke new topic from guide.
+        ChangeDir,        # Change current working directory.
+        MakeDir,          # Make a directory or make recursive directories.
+        MakeSymlink,      # Make a symlink for a target source
+        ViewWeb,          # Open a link in default browser.
+        GoogleSearch,     # Perform a Google search and open default browser.
+        DuckDuckGoSearch, # Perform a DuckDuckGo search and open default browser.
+        WikipediaSearch,  # Perform a Wikipedia search and open default browser.
+        GitHubSearch,     # Open a GitHub search in default browser.
+        ShellExec,        # Run a command in shell.
+        ChangeMod,        # Change permissions on file or directory.
+        ChangeOwner,      # Change owner and group on file or directory.
+        Copy,             # Copy files from a given source to a given destination.
+        Move,             # Move files from a given source to a given destination.
+        Remove,           # Remove files from a given source.
+        KillProcess,      # Send SIGTERM signal to a process.
+        Touch,            # Create a new file.
+        EditFile,         # Edit content of an existing file.
+        InstallPackage,   # Install new package software.
+        InvokeTopic,      # Invoke new topic from guide.
+        Noop,             # No operation; nothing to do.
     }
 
     statements = {}
@@ -79,15 +89,20 @@ class Statement(object):
         Returns:
             bool: True if statements are mapped successful.
         """
+
+        Log.info("Preparing to scan %d actions" % len(cls.__actions))
         for action in cls.__actions:
             if not callable(action):
                 raise SystemExit("Expected action to be callable")
+            Log.debug("Scanning action: %s" % action.parse_description())
             for line in action.parse_statements():
-                exp = re.compile(line.strip(), re.I)
+                exp = compile(line.strip(), IGNORECASE|UNICODE)
                 cls.statements.update({exp: action})
+                Log.debug("Updating known patterns: %s" % exp.pattern)
         if len(cls.statements) < len(cls.__actions):
             raise SystemExit("Unable to map statements to action")
         cls.ready = True
+        Log.info("All statements are scanned")
 
     @classmethod
     def find_statement(cls, stmt):
@@ -96,6 +111,7 @@ class Statement(object):
         Returns:
             mixt: Statement if found, otherwise None.
         """
+
         return cls.statements.get(stmt)
 
     @classmethod
@@ -105,6 +121,7 @@ class Statement(object):
         Returns:
             bool: True if statement is found.
         """
+
         return cls.find_statement(stmt) is not None
 
     @classmethod
@@ -114,6 +131,7 @@ class Statement(object):
         Returns:
             iterator: A key-value itertator of all statements.
         """
+
         return cls.statements.iteritems()
 
     @classmethod
@@ -123,4 +141,5 @@ class Statement(object):
         Returns:
             list: All supported actions.
         """
+
         return cls.__actions

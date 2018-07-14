@@ -18,45 +18,45 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import makedirs, path as fpath
+import webbrowser as wb
 
 from buildok.action import Action
 
 
-class MakeDir(Action):
-    r"""Make a directory or make recursive directories.
+class GitHubSearch(Action):
+    r"""Open a GitHub search in default browser.
 
     Args:
-        path (str): Path to directory.
+        search (str): Search string to lookup.
 
     Retuns:
-        str: Human readable descriptor message or error.
+        str: Output as string.
 
     Raises:
-        OSError: If an invalid `path` is provided or if path already exists.
+        TypeError: If an invalid `search` is provided.
 
     Accepted statements:
-        ^create (?:folder|directory) `(?P<path>.+)`$
-        ^make new (?:folder|directory) `(?P<path>.+)`$
+        ^lookup `(?P<search>.+)` on github$
 
-    Sample input:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder`.
+    Sample (input):
+        1) Lookup `buildok` on GitHub.
 
     Expected:
-        Created new directory => buildok_test_folder
+        Lookup results => https://github.com/search?q=buildok
     """
 
-    def run(self, path=None, *args, **kwargs):
+    def run(self, search=None, *args, **kwargs):
+        url = r"https://github.com/search?q={}".format(search)
         try:
-            if not fpath.isdir(path):
-                makedirs(path)
-            self.success("Created new directory => %s" % path)
-        except OSError as e:
+            wb.get().open(url, new=2)
+            self.success("Lookup results => %s" % url)
+        except TypeError as e:
             self.fail(str(e))
+        except Exception as e:
+            self.fail("Cannot open \"%s\"" % url)
 
     @classmethod
-    def _convert_bash(cls, path=None, *args, **kwargs):
-        if path is not None:
-            return "mkdir -p %s" % path
-        return "echo cannot create folder because of invalid path"
+    def _convert_bash(cls, search=None, *args, **kwargs):
+        if search is None:
+            return "echo Nothing to lookup"
+        return "echo Cannot lookup \"%s\"" % search

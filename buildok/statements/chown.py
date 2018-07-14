@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import chown, getcwd
+from os import chown, getcwd, path as fpath
 
 try:
     from pwd import getpwnam
@@ -86,7 +86,7 @@ class ChangeOwner(Action):
         if path is None:
             path = "."
         flags = kwargs.get("flags", "")
-        if os.path.isdir(path):
+        if fpath.isdir(path):
             flags = " -R"
         if owner is not None and group is not None:
             return "chown%s %s:%s %s" % (flags, owner, group, path)

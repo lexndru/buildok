@@ -29,9 +29,17 @@ from buildok.reader import Reader
 from buildok.report import Report
 
 from buildok.readers.read_me import ReadmeReader
-
 from buildok.structures.topic import Topic
+from buildok.statements.invoke import InvokeTopic
+from buildok.util.log import Log
 
+
+RUN_INSTRUCTIONS = """
+ Buildok is ready! Choose a topic to run, either by it's ID or by name (can
+ be partial match as well). During the runtime SIGTERM is ignored. Typing an
+ ID or a name that does not exist will restart the promter. The prompter will
+ increment with every attempt. Leaving the field blank will end session.
+"""
 
 class Script(object):
     """Automated script wrapper.
@@ -52,6 +60,7 @@ class Script(object):
         self.last_step = 0
         self.guide_topics = None
         self.convert = False
+        Log.info("Initializing...")
 
     def setup(self):
         """Setup project path, topic and topic pattern, convertion type.
@@ -60,18 +69,22 @@ class Script(object):
         # Look for a specific topic
         if self.args.topic is not None:
             Topic.set_project_topic(self.args.topic)
+            Log.info("Topic changed to: %s" % self.args.topic)
 
         # Set topic pattern
         if self.args.topic_pattern is not None:
             Topic.set_project_topic_pattern(self.args.topic_pattern)
+            Log.info("Topic pattern changed to: %s" % self.args.topic_pattern)
 
         # Change project path from current working directory to choosen path
         if self.args.guide is not None:
             Reader.set_project_path(self.args.guide)
+            Log.info("Project guide location: %s" % self.args.guide)
 
         # Convert build steps to script before exit
         if self.args.convert is not None:
             Converter.prepare(self.args.convert)
+            Log.info("Topic convertion set to: %s" % self.args.convert)
             self.convert = True
 
     def run(self, ignore_fails=False):
@@ -82,27 +95,21 @@ class Script(object):
         """
 
         failed = False
-        selected_topic = self.topic.get_title()
-        alert_text = "Preparing to run:"
-        title_len = len(alert_text) + len(selected_topic)
-        print("")
-        print("-" * (title_len + 1))
-        print(u"%s \033[92m%s\033[0m" % (alert_text, selected_topic))
-        print("-" * (title_len + 1))
-        print("")
+        Log.info("Preparing to run %d steps from topic..." % len(self.topic.get_steps()))
 
         # Loop steps and run each one
         start_time = timeit.default_timer()
+        Log.debug("Setting start time: %s" % start_time)
+
         for self.last_step, step in enumerate(self.steps):
-            print("Running step #%d" % (self.last_step+1))
-            print("---> \033[93m%s\033[0m" % step.get_step())
-            print("     \033[95m%s\033[0m" % step.get_description())
+            Log.debug("Preparing step (%d) %s" % (self.last_step+1, step.get_description()))
+            Log.info(u"Running \033[93m%s\033[0m ..." % step.get_step())
             try:
                 success, output = step.run()
                 if success:
-                    print(u"   \033[92m\u2713 (OK) %s\033[0m" % output)
+                    Log.info(u"\033[92m\u2713 (Success)\033[0m \033[93m%s\033[0m" % output)
                 else:
-                    print(u"   \033[91m? (Failed) %s\033[0m" % output)
+                    Log.info(u"\033[91m? (Failed)\033[0m \033[95m%s\033[0m" % output)
                     if not ignore_fails:
                         failed = True
                         Report.set_error(output)
@@ -111,27 +118,29 @@ class Script(object):
             except Exception as e:
                 failed = True
                 Report.set_error(e)
-                print(u"   \033[91m? (Error) %s\033[0m" % str(e))
+                Log.info(u"\033[91m? (Error) %s\033[0m" % str(e))
                 break
-            print("")
+
         stop_time = timeit.default_timer()
+        Log.debug("Set stop time: %s" % stop_time)
+        Log.debug("Runtime %ss" % (stop_time - start_time))
 
         # Save runtime
         Report.set_runtime(stop_time - start_time)
 
         # Wrap up...
-        print("\nDone running steps...")
+        Log.debug("Done running steps...")
         if failed:
-            print("An error occured while topic '%s' was running" % self.topic.get_title())
+            Log.info("An error occured while topic '%s' was running" % self.topic.get_title())
             Report.set_status("Failed")
         else:
-            print("Topic '%s' has ran all steps with no errors" % self.topic.get_title())
+            Log.info("Topic '%s' has ran all steps with no errors" % self.topic.get_title())
             Report.set_status("OK")
         if self.convert and not failed:
-            print("Converting...")
+            Log.debug("Converting...")
             Converter.check() and Converter.save(self.steps)
-            print("Conversion done!")
-        print("Closing...\n--")
+            Log.debug("Conversion done!")
+        Log.debug("Closing...")
 
     def parse(self):
         """Parse guide and extract topics.
@@ -143,15 +152,17 @@ class Script(object):
         rr = ReadmeReader(validate=True)
         rr.read()
         rr.parse()
+        Log.info("Parsing guide...")
 
         # Preview scanned guide
         if self.args.preview:
+            Log.info("Loading guide preview...")
             rr.preview(150)
 
         # Scan guide for topics
         guide = rr.get_guide() if self.args.topic is None else rr.get_guide_by_topic()
         if guide is None:
-            raise ValueError("Guide has no such topic")
+            Log.fatal("Guide has no such topic")
 
         # Scan topics
         topic, steps = None, []
@@ -160,29 +171,69 @@ class Script(object):
 
         # Handle no topics
         if topics_len == 0:
-            raise ValueError("No topics found")
+            Log.fatal("No topics found")
+        else:
+            Log.info("Guide has %d topics" % topics_len)
 
         # Handle topics
-        print("Found the following topics:")
+        Log.info("Found the following topics...")
+        print("")
         for pos, name in enumerate(topics):
             print(("%" + str(len(str(topics_len))+1) + "d) %s") % (pos+1, name))
-        print("\nChoose a topic to run, either by it's ID or by name.")
-        print("Exit with ^C or leave field blank and press return.\n--\n")
+        print(RUN_INSTRUCTIONS)
+
+        # Pair each step with appropriate statement
+        self.guide_topics = guide.get_topics()
+        if not all([Matcher.pair_all(t.get_steps()) for t in self.guide_topics]):
+            Log.fatal("Cannot continue because of unsupported steps")
 
         # Save topic and topic's steps
-        self.guide_topics = guide.get_topics()
         self.topic = self.get_user_input()
         self.steps = self.topic.get_steps()
 
-        # Pair each step with appropriate statement
-        Matcher.pair_all(self.steps)
+        # Confirm topic
+        print("")
+        Log.info(u"Matching topic \033[92m%s\033[0m" % self.topic.get_title())
+
+        # Patch topic imports
+        self.patch_topic_invoke(self.steps)
 
         # Prepare report
         Report.set_total_steps(len(self.steps))
         Report.set_topic(self.topic.get_title())
         return self
 
-    def get_user_input(self):
+    def patch_topic_invoke(self, steps):
+        """Scan steps for topic invoking.
+
+        Replace invoker step with topic's steps.
+        """
+
+        for i, step in enumerate(steps):
+
+            # Skip if step is not an invoker
+            if step.action is not InvokeTopic:
+                continue
+
+            # Find invoked topic
+            topic = step.get_kwarguments().get("topic", "")
+            topic_steps = self.get_steps_by_topic(topic)
+            self.patch_topic_invoke(topic_steps)
+            self.steps[i:i+1] = topic_steps
+
+    def get_steps_by_topic(self, topic_name):
+        """Retrieve steps by topic name.
+
+        Returns an empty list if nothing is found.
+        """
+
+        for topic in Topic.get_all_topics():
+            if topic_name.lower() == topic.get_title().lower():
+                return topic.get_steps()
+        return []
+
+
+    def get_user_input(self, attempt=1):
         """Prompt user to choose a topic from a list.
 
         Exists if user leaves blank input or hits C^, otherwise continues until
@@ -191,7 +242,8 @@ class Script(object):
 
         # Prompt for input
         try:
-            user_input = raw_input("> ")
+            user_input = raw_input("[%d] > " % attempt)
+            attempt += 1
 
         # Exit on C^
         except KeyboardInterrupt:
@@ -210,7 +262,7 @@ class Script(object):
                 raise IndexError
             return self.guide_topics[pos-1]
         except IndexError:
-            return self.get_user_input()
+            return self.get_user_input(attempt)
         except Exception:
             pass
 
@@ -232,11 +284,11 @@ class Script(object):
             pass
 
         # No valid topic found, start over
-        return self.get_user_input()
+        return self.get_user_input(attempt)
 
     def print_report(self):
         """Dumps a report of the script outcome.
         """
-        print("\nPreparing to print report...\n")
+
+        Log.info("Preparing to print report...")
         Report.output()
-        print("\n")

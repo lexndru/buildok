@@ -27,6 +27,7 @@ from buildok.structures.topic import Topic
 
 from buildok.util.console import Console
 from buildok.util.readerr import ReadError
+from buildok.util.log import Log
 
 
 class ReadmeReader(Reader):
@@ -70,6 +71,8 @@ class ReadmeReader(Reader):
 
         Loop through all steps and check for topics and instructions.
         """
+
+        Log.debug("Guide has %d lines" % len(self.content))
         self.last_guide = Guide()
         while self.has_next():
             line = self.get_line(strip=True)
@@ -89,6 +92,7 @@ class ReadmeReader(Reader):
         Returns:
             mixt: Guide instance if is set, otherwise None.
         """
+
         return self.last_guide
 
     def get_guide_by_topic(self):
@@ -97,6 +101,7 @@ class ReadmeReader(Reader):
         Returns:
             mixt: Guide instance if is set, otherwise None.
         """
+
         for topic in self.last_guide.get_topics():
             if Topic.TOPIC == topic.get_title():
                 guide = Guide()
@@ -113,6 +118,7 @@ class ReadmeReader(Reader):
         Returns:
             self: Self instance.
         """
+
         scan = Topic.PATTERN.match(line)
         if scan is not None:
             title = scan.group("topic")
@@ -132,6 +138,7 @@ class ReadmeReader(Reader):
         Returns:
             self: Self instance.
         """
+
         if self.no_topic_skip and self.last_topic is None:
             self.last_step = None
             return self
@@ -141,7 +148,7 @@ class ReadmeReader(Reader):
             punct = scan.group("punct")
             self.last_step = Instruction(self.get_line_number(), step, punct)
             if self.last_topic is None:
-                raise Exception("Unaccepted instruction: missing topic in guide")
+                Log.fatal("Unaccepted instruction: missing topic in guide")
             self.last_topic.add_step(self.last_step)
         return self
 
@@ -154,6 +161,7 @@ class ReadmeReader(Reader):
         Returns:
             self: Self instance.
         """
+
         if self.last_step is None or self.last_step.punct != Instruction.RunType.ARGS:
             return self
         newlines, borders = 0, []
@@ -183,6 +191,7 @@ class ReadmeReader(Reader):
 
         Useful to customize the display row of a line.
         """
+
         line_topic = Topic.PATTERN.match(line)
         if line_topic is not None:
             self.recent_topic = line_topic.group("topic")

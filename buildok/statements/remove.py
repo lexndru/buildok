@@ -65,7 +65,7 @@ class Remove(Action):
         flags = kwargs.get("flags", "")
         if src is None:
             src = "."
-        if os.path.isdir(src):
+        if path.isdir(src):
             flags = " -r"
         if flags == "":
             flags = " -f"

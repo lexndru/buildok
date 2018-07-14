@@ -73,5 +73,6 @@ class Matcher(object):
                 instruction.set_description(fun.parse_description())
                 instruction.set_statement(fun)
                 instruction.set_arguments(args.groups())
+                instruction.set_kwarguments(args.groupdict())
                 return True
         return False

@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 from os import environ
 
 from buildok.version import __version__
@@ -32,6 +34,7 @@ from buildok.util.shell import Shell
 from buildok.util.analyze import self_analyze, analyze, crash
 from buildok.util.locker import lock, unlock
 from buildok.util.sysenv import Sysenv
+from buildok.util.log import Log
 
 
 def main(error=None):
@@ -42,7 +45,10 @@ def main(error=None):
     # Parse command line args
     args = Shell.parse()
 
-    # Set verbose level
+    # Set log verbose level
+    Log.configure(verbose=args.verbose)
+
+    # Set console verbose level
     Console.verbose = args.verbose
 
     # Prepare all statements

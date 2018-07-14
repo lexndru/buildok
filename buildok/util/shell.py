@@ -26,7 +26,7 @@ class Shell(object):
 
     Attributes:
         parser (ArgumentParser): Argument parser.
-        args (dict): Dictionary of arguments.
+        args             (dict): Dictionary of arguments.
     """
 
     parser = ArgumentParser(description="A tool to automate build steps from README files")
@@ -71,11 +71,26 @@ class Shell(object):
             "dest": "install_policy",
             "help": "set or install a system utility policy"
         },
+        (None, "--version"): {
+            "action": "store_true",
+            "dest": "version",
+            "help": "display version number"
+        },
+        (None, "--config-file"): {
+            "action": "store",
+            "dest": "config_file",
+            "help": "set path to configuration file"
+        },
+        (None, "--placeholder"): {
+            "action": "store",
+            "dest": "placeholder",
+            "help": "set value to replace placeholder"
+        },
     }
 
     @classmethod
     def parse(cls):
-        """Ceate parser listener.
+        """Create parser listener.
 
         Return:
             Namespace: Namespace of parser arguments from shell.

@@ -23,6 +23,8 @@ from __future__ import print_function
 from os import environ, listdir
 from platform import system
 
+from buildok import __build__
+
 
 class Sysenv(object):
     """System environment wrapper.
@@ -44,16 +46,16 @@ class Sysenv(object):
             raise SystemExit("Invalid launch")
 
         # Buildok version header
-        header = "buildok v%s @ " % version
+        os_version = "N/A"
 
         # Basic support for windows systems
         if system().lower() == "windows":
-            header += u"\033[92mwindows\033[0m system"
+            os_version = u"WINDOWS"
             cls.OS_NAME = "win"
 
         # Extended support for macos systems
         elif system().lower() == "darwin":
-            header += u"\033[92mmacintosh\033[0m system"
+            os_version = u"MACINTOSH"
             cls.OS_NAME = "mac"
 
         # Full support for linux systems
@@ -70,12 +72,26 @@ class Sysenv(object):
                     if line.lower().startswith("pretty_name") and pretty_name == "":
                         _, pretty_name = line.split("=", 1)
             os_name = distro.strip()
-            header += u"\033[92m%s\033[0m system (%s)" % (os_name, pretty_name.strip())
+            os_version = u"%s (%s)" % (os_name.upper(), pretty_name.strip())
             cls.OS_NAME = os_name
 
         # Extended or full support for bsd systems
         elif "bsd" in system().lower():
-            header +=  u"\033[92mbsd\033[0m system"
+            os_version =  "BSD"
             cls.OS_NAME = "bsd"
 
-        print("%s\n--" % header)
+        # Print version
+        print("Buildok {} [build {}] {}\n".format(version, __build__, os_version))
+
+        # Print disclaimer
+        print('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR')
+        print("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,")
+        print("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE")
+        print("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER")
+        print("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,")
+        print("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE")
+        print("SOFTWARE.\n")
+
+        # Support
+        print("Please report bugs at https://github.com/lexndru/buildok")
+        print("Use --help to see a list of all options\n")

@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from shlex import split as cmd_split
 from subprocess import check_output, CalledProcessError, STDOUT
 
 from buildok.action import Action
@@ -42,21 +43,23 @@ class ShellExec(Action):
         1) Run `echo hello friend how are you`.
 
     Expected:
-        hello friend how are you
+        Output => hello friend how are you
     """
 
     def run(self, cmd=None, *args, **kwargs):
+        cmd_call = cmd_split(cmd)
         try:
-            output = check_output(cmd.split(), stderr=STDOUT)
+            output = check_output(cmd_call, stderr=STDOUT)
             if output is None:
-                self.success("no error")
-            else:
-                self.success(output.decode('utf-8').strip())
+                output = "n/a"
+            self.success(u"Output => %s" % output.decode('utf-8').strip())
         except CalledProcessError as e:
             self.fail(e.output)
+        except Exception as e:
+            self.fail(str(e))
 
     @classmethod
     def _convert_bash(cls, cmd=None, *args, **kwargs):
         if cmd is None:
-            return "echo invalid or missing cmd"
+            return "echo Invalid script or missing cmd"
         return cmd

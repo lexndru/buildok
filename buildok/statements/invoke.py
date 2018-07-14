@@ -20,8 +20,6 @@
 
 from buildok.action import Action
 
-from buildok.structures.topic import Topic
-
 
 class InvokeTopic(Action):
     r"""Invoke another topic from guide.
@@ -48,14 +46,4 @@ class InvokeTopic(Action):
     """
 
     def run(self, topic=None, *args, **kwargs):
-        
-        for step in self.get_steps_by_topic(topic):
-            print step.action
-        self.success("OK")
-        self.fail("noononono")
-
-    def get_steps_by_topic(self, topic):
-        for t in Topic.get_all_topics():
-            if topic.lower() == t.get_title().lower():
-                return t.get_steps()
-        return []
+        pass

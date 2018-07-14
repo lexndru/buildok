@@ -18,45 +18,39 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from os import makedirs, path as fpath
-
-from buildok.action import Action
+import logging
 
 
-class MakeDir(Action):
-    r"""Make a directory or make recursive directories.
-
-    Args:
-        path (str): Path to directory.
-
-    Retuns:
-        str: Human readable descriptor message or error.
-
-    Raises:
-        OSError: If an invalid `path` is provided or if path already exists.
-
-    Accepted statements:
-        ^create (?:folder|directory) `(?P<path>.+)`$
-        ^make new (?:folder|directory) `(?P<path>.+)`$
-
-    Sample input:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder`.
-
-    Expected:
-        Created new directory => buildok_test_folder
+class Log(object):
+    """Simple log wrapper
     """
 
-    def run(self, path=None, *args, **kwargs):
-        try:
-            if not fpath.isdir(path):
-                makedirs(path)
-            self.success("Created new directory => %s" % path)
-        except OSError as e:
-            self.fail(str(e))
+    config = {
+        r"format": r"%(asctime)-15s %(message)s"
+    }
 
     @classmethod
-    def _convert_bash(cls, path=None, *args, **kwargs):
-        if path is not None:
-            return "mkdir -p %s" % path
-        return "echo cannot create folder because of invalid path"
+    def configure(cls, verbose=False):
+        cls.config["level"] = logging.DEBUG if verbose else logging.INFO
+        logging.basicConfig(**cls.config)
+
+    @classmethod
+    def info(cls, message):
+        logging.info(message)
+
+    @classmethod
+    def debug(cls, message):
+        logging.debug(message)
+
+    @classmethod
+    def warn(cls, message):
+        logging.warning(message)
+
+    @classmethod
+    def error(cls, message):
+        logging.error(message)
+
+    @classmethod
+    def fatal(cls, message):
+        cls.error(message)
+        raise SystemExit(message)

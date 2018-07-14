@@ -42,19 +42,21 @@ class GoogleSearch(Action):
         1) Google `buildok`.
 
     Expected:
-        Opened URL in browser => https://google.com/?q=buildok
+        Google search results => https://google.com/?q=buildok
     """
 
     def run(self, search=None, *args, **kwargs):
-        url = "https://www.google.com?q={}".format(search)
+        url = r"https://www.google.com?q={}".format(search)
         try:
             wb.get().open(url, new=2)
-            self.success("Opened URL in browser => %s" % url)
+            self.success("Google search results => %s" % url)
         except TypeError as e:
             self.fail(str(e))
+        except Exception as e:
+            self.fail("Cannot open \"%s\"" % url)
 
     @classmethod
     def _convert_bash(cls, search=None, *args, **kwargs):
         if search is None:
-            return "echo Cannot google search"
-        return "echo Cannot google search for: %s" % search
+            return "echo Nothing to Google"
+        return "echo Cannot Google search for: %s" % search

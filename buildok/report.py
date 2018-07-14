@@ -20,6 +20,9 @@
 
 from __future__ import print_function
 
+from buildok.util.log import Log
+from buildok.util.console import Console
+
 
 class Report(object):
     """Report wrapper for automated scripts.
@@ -44,44 +47,51 @@ class Report(object):
     def set_runtime(cls, runtime):
         """Set runtime value.
         """
+
         cls.runtime = runtime
 
     @classmethod
     def set_status(cls, status):
         """Set status value.
         """
+
         cls.status = status
 
     @classmethod
     def set_topic(cls, topic):
         """Set topic value.
         """
+
         cls.topic = topic
 
     @classmethod
     def set_total_steps(cls, total_steps):
         """Set total steps value.
         """
+
         cls.total_steps = total_steps
 
     @classmethod
     def set_error(cls, error):
         """Set error value.
         """
+
         cls.error = error
 
     @classmethod
     def inc_step(cls, inc):
         """Increment current step value.
         """
+
         cls.current_step += inc
 
     @classmethod
     def output(cls):
         """Dump report of each saved property.
         """
-        print("%20s =" % "Status", cls.status.upper())
-        print("%20s =" % "Runtime", "%ss" % cls.runtime)
-        print("%20s =" % "Topic ran", cls.topic)
-        print("%20s =" % "Steps ran", "%d out of %d" % (cls.current_step, cls.total_steps))
-        print("%20s =" % "Last error", cls.error)
+
+        Log.info("""Topic name: "%s" """ % cls.topic)
+        Log.info("Steps ran successful %d out of %d" % (cls.current_step, cls.total_steps))
+        Log.info("""Last step error: "%s" """ % cls.error)
+        Log.info("Runtime %ss" % cls.runtime)
+        Log.info("Build %s" % cls.status.upper())

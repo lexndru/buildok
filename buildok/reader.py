@@ -20,7 +20,10 @@
 
 from __future__ import print_function
 
-import os
+from os import path
+
+from buildok.util.log import Log
+from buildok.util.console import Console
 
 
 class Reader(object):
@@ -58,8 +61,9 @@ class Reader(object):
         Raises:
             ValueError: If project path is not a string.
         """
+
         if not isinstance(project_path, (str, unicode)):
-            raise ValueError("Project path must be string")
+            Log.fatal("Project path must be string")
         cls.PATH = project_path.rstrip("/")
 
     def parse(self):
@@ -68,6 +72,7 @@ class Reader(object):
         Raises:
             NotImplementedError: Readers must implement this method.
         """
+
         raise NotImplementedError("Must implement read method")
 
     def read(self):
@@ -76,6 +81,7 @@ class Reader(object):
         Raises:
             OSError: If `filename` cannot be found or accesed.
         """
+
         with open(self.filename, "rb") as file_:
             self.content = [r.rstrip("\n") for r in file_.readlines()]
 
@@ -85,7 +91,8 @@ class Reader(object):
         Returns:
             bool: Returns True if `filename` exists, otherwise False.
         """
-        return os.path.isfile(self.filename)
+
+        return path.isfile(self.filename)
 
     def crash(self):
         """Crash reader with an error.
@@ -93,6 +100,7 @@ class Reader(object):
         Raises:
             NotImplementedError: Reader must overwrite READER attribute.
         """
+
         raise NotImplementedError("Directly call on Reader not allowed")
 
     def setup(self):
@@ -104,14 +112,15 @@ class Reader(object):
         Returns:
             bool: Returns True if project setup is done.
         """
+
         if self.READER is None or self.PATH is None:
             return False
-        path = self.PATH
-        if os.path.isdir(path):
-            path = os.path.join(self.PATH, self.READER)
-        self.filename = os.path.abspath(path)
+        filepath = self.PATH
+        if path.isdir(filepath):
+            filepath = path.join(self.PATH, self.READER)
+        self.filename = path.abspath(filepath)
         if not self.exists():
-            raise ValueError("Project does not have a proper build file: %s" % path)
+            Log.fatal("Project does not have a proper build file: %s" % filepath)
         return True
 
     def get_build_source(self):
@@ -121,6 +130,7 @@ class Reader(object):
             build_file (str): Build file.
             validate  (bool): True if has to be validated.
         """
+
         return (self.filename, self.validate)
 
     def has_next(self):
@@ -129,6 +139,7 @@ class Reader(object):
         Returns:
             bool: True if it has unread lines, otherwise False.
         """
+
         more_lines = len(self.content) > self.cursor
         if more_lines:
             self.line = self.content[self.cursor]
@@ -143,6 +154,7 @@ class Reader(object):
         Returns:
             str: Current line from build file.
         """
+
         return self.line.strip() if strip else self.line
 
     def get_line_number(self):
@@ -151,6 +163,7 @@ class Reader(object):
         Returns:
             int: Current line number from build file.
         """
+
         return self.cursor
 
     def next_line(self):
@@ -158,6 +171,7 @@ class Reader(object):
 
         It actually calls skip_line() with 1 iteration.
         """
+
         self.skip_line()
 
     def skip_line(self, lines=1):
@@ -166,6 +180,7 @@ class Reader(object):
         Move line cursor ahead. By default it jumps one line.
         Can go backwards if negative number is provided.
         """
+
         self.cursor += lines
 
     def next_content(self):
@@ -174,6 +189,7 @@ class Reader(object):
         Returns:
             list (list): Returns content ahead of cursor or empty list.
         """
+
         index = self.cursor + 1
         if index >= len(self.content):
             return []
@@ -184,6 +200,7 @@ class Reader(object):
 
         Outputs list of all lines from build file with line number in front.
         """
+
         self.read()
         max_line = len(str(len(self.content))) + 1
         limit -= max_line
@@ -191,7 +208,7 @@ class Reader(object):
         for i, line in enumerate(self.content):
             _line = line
             preview_line = ""
-            prefix = ("%" + str(max_line) + "d |") % i
+            prefix = ("%" + str(max_line) + "d |") % (i + 1)
             if len(line) == 0:
                 preview_line = prefix + " [newline]"
             while len(line) > 0:
@@ -205,4 +222,5 @@ class Reader(object):
 
         Useful to customize the display row of a line.
         """
-        return u"\033[96m%s\033[0m" % preview_line
+
+        return Console.darkgray(preview_line)

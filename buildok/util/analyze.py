@@ -20,6 +20,8 @@
 
 from __future__ import print_function
 
+from buildok.util.log import Log
+
 
 class UnicodeIcon(object):
 
@@ -33,7 +35,8 @@ def crash(message):
     Raises:
         SystemExit.
     """
-    raise SystemExit("Unexpected crash...\n%s" % message)
+
+    return Log.fatal("Unexpected crash! %s" % message)
 
 
 def scan_statements(statement):
@@ -42,6 +45,7 @@ def scan_statements(statement):
     Returns:
         dict: Dictionary of all statements with a counter.
     """
+
     lines = {}
     if statement is None:
         return lines
@@ -59,6 +63,7 @@ def self_analyze(lines=None, statement=None):
     Returns:
         bool: True if all statements are ok, otherwise False.
     """
+
     if lines is None:
         lines = scan_statements(statement)
     return all([v == 1 for v in lines.itervalues()])
@@ -70,16 +75,18 @@ def analyze(statement, length=80):
     Returns:
         bool: True if all statements are ok, otherwise False.
     """
+
     lines = scan_statements(statement)
     results = self_analyze(lines)
+    Log.info("Listing all statements...")
     for action in statement.get_actions():
-        print("\n+---+%-{}s+".format(length-4) % ("-" * (length-4)))
         try:
             text = action.__doc__.splitlines()[0]
         except:
             text = "no description"
-        print(u"|   | \033[96m%-{}s\033[0m |".format(length-6) % text)
-        print("+---+%-{}s+".format(length-4) % ("-" * (length-4)))
+        print("")
+        print(u"\033[90m|   |\033[0m \033[96m%-{}s\033[0m \033[90m|\033[0m".format(length-6) % text)
+        print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % ("-" * (length-4)))
         for line in action.parse_statements():
             if lines[line] > 1:
                 status = UnicodeIcon.INVALID
@@ -87,15 +94,14 @@ def analyze(statement, length=80):
             else:
                 status = UnicodeIcon.VALID
                 line_text = u"\033[92m%-{}s\033[0m".format(length-6) % line.strip()
-            print(u"| %s | %s |" % (status, line_text))
-        print("+---+%-{}s+".format(length-4) % ("-" * (length-4)))
+            print(u"\033[90m|\033[0m %s \033[90m|\033[0m %s \033[90m|\033[0m" % (status, line_text))
+        print("")
     if not results:
-        print("\nDuplicated statements found:")
+        Log.error("Duplicated statements found!")
         for line, times in lines.iteritems():
             if times > 1:
-                print(" - line duplicated %d times: %s" % (times, line.strip()))
-        print("Please correct these problems before running again.")
+                Log.error(" - line duplicated %d times: %s" % (times, line.strip()))
+        Log.error("Please correct these problems before running again.")
     else:
-        print("\nEverything looks OK!")
-    print("--")
+        Log.debug("Everything looks OK!")
     return results
