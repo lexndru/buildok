@@ -1,5 +1,5 @@
 CWD=$(shell pwd)
-BUILD_VER=$(shell git log -1 --format="%H")
+BUILD_VER=$(shell git log -1 --format="%h")
 SRCDIR=buildok
 TESTDIR=test
 
