@@ -18,12 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import webbrowser as wb
-
-from buildok.action import Action
+from buildok.statements.web import ViewWeb
 
 
-class GoogleSearch(Action):
+class GoogleSearch(ViewWeb):
     r"""Open a Google search results in default browser.
 
     Args:
@@ -47,16 +45,8 @@ class GoogleSearch(Action):
 
     def run(self, search=None, *args, **kwargs):
         url = r"https://www.google.com?q={}".format(search)
-        try:
-            wb.get().open(url, new=2)
+        error = self.open_url(url)
+        if error is not None:
+            self.fail(error)
+        else:
             self.success("Google search results => %s" % url)
-        except TypeError as e:
-            self.fail(str(e))
-        except Exception as e:
-            self.fail("Cannot open \"%s\"" % url)
-
-    @classmethod
-    def _convert_bash(cls, search=None, *args, **kwargs):
-        if search is None:
-            return "echo Nothing to Google"
-        return "echo Cannot Google search for: %s" % search

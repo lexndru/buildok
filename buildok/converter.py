@@ -36,12 +36,13 @@ class Converter(object):
 
     target_name, target_class = None, None
     workdir = os.getcwd()
-    prefix = "_convert_"
+    prefix = "convert_"
 
     @classmethod
     def prepare(cls, target):
-        if target == "bash":
+        if target == "shell" or target == "bash":
             cls.target_class = BashConverter
+            cls.target_name = "shell"
         elif target == "vagrant":
             raise Exception("Unsupported yet: %s" % target)
         elif target == "docker":
@@ -52,7 +53,6 @@ class Converter(object):
             raise Exception("Unsupported yet: %s" % target)
         else:
             raise Exception("Unsupported target: %s" % target)
-        cls.target_name = target
 
     @classmethod
     def check(cls):

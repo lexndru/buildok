@@ -37,7 +37,10 @@ from buildok.statements.move import Move
 from buildok.statements.remove import Remove
 from buildok.statements.touch import Touch
 from buildok.statements.edit_file import EditFile
+from buildok.statements.install_pip import PipInstallPackage
+from buildok.statements.install_npm import NpmInstallPackage
 from buildok.statements.install import InstallPackage
+from buildok.statements.uninstall import UninstallPackage
 from buildok.statements.invoke import InvokeTopic
 from buildok.statements.noop import Noop
 
@@ -71,7 +74,10 @@ class Statement(object):
         KillProcess,      # Send SIGTERM signal to a process.
         Touch,            # Create a new file.
         EditFile,         # Edit content of an existing file.
+        PipInstallPackage,# Install Python packages.
+        NpmInstallPackage,# Install Node.js packages.
         InstallPackage,   # Install new package software.
+        UninstallPackage, # Uninstall package software.
         InvokeTopic,      # Invoke new topic from guide.
         Noop,             # No operation; nothing to do.
     }

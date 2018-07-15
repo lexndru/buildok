@@ -47,16 +47,25 @@ class ViewWeb(Action):
     """
 
     def run(self, url=None, *args, **kwargs):
+        error = self.open_url(url)
+        if error is not None:
+            self.fail(error)
+        else:
+            self.success("Opened URL in browser => %s" % url)
+
+    def open_url(self, url):
         try:
             wb.get().open(url, new=2)
-            self.success("Opened URL in browser => %s" % url)
+        except wb.Error as e:
+            return str(e)
         except TypeError as e:
-            self.fail(str(e))
+            return str(e)
         except Exception as e:
-            self.fail("Cannot open \"%s\"" % url)
+            return "Cannot open \"%s\": %s" % (url, str(e))
+        return None
 
     @classmethod
-    def _convert_bash(cls, url=None, *args, **kwargs):
+    def convert_shell(cls, url=None, *args, **kwargs):
         if url is None:
-            return "echo Cannot open browser"
-        return "echo Cannot open url in browser: %s" % url
+            return "echo Cannot open browser: URL is missing?"
+        return "echo Cannot open URL in browser: %s" % url

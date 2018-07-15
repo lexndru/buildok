@@ -30,33 +30,89 @@ class Sysenv(object):
     """System environment wrapper.
 
     Used in various files as a bash ENV-like to determine OS-related calls.
+
+    app_version  (str): Application version (v0.0.0).
+    os_name      (str): Operating System name.
+    os_version   (str): Operating System version.
+    shell_args (Shell): Shell instance with arguments.
     """
 
-    OS_NAME = ""
+    app_version = ""
+    os_name = ""
+    os_version = ""
+    shell_args = None
 
     @classmethod
-    def check(cls, version):
-        """Check system OS.
-
-        Determine support and print CLI headers.
+    def print_disclaimer(cls):
+        """Outputs application disclaimer.
         """
+
+        print('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR')
+        print("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,")
+        print("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE")
+        print("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER")
+        print("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,")
+        print("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE")
+        print("SOFTWARE.")
+
+    @classmethod
+    def print_support(cls):
+        """Outputs support message.
+        """
+
+        print("Please report bugs at https://github.com/lexndru/buildok")
+        print("Use --help to see a list of all options")
+
+    @classmethod
+    def print_version(cls):
+        """Outputs application version.
+        """
+
+        print("Buildok {} [build {}] {}".format(cls.app_version, __build__, cls.os_version))
+
+    @classmethod
+    def print_headers(cls):
+        """Output application version, disclaimer and support.
+        """
+
+        # Print version
+        cls.print_version()
+        print("")
+
+        # Print disclaimer
+        cls.print_disclaimer()
+        print("")
+
+        # Print support
+        cls.print_support()
+        print("")
+
+    @classmethod
+    def setup(cls, version, args):
+        """Setup system environment.
+        """
+
+        cls.shell_args = args
 
         # Exit if version is missing
         if not version:
             raise SystemExit("Invalid launch")
 
+        # Set app version
+        cls.app_version = version
+
         # Buildok version header
-        os_version = "N/A"
+        cls.os_version = ""
 
         # Basic support for windows systems
         if system().lower() == "windows":
-            os_version = u"WINDOWS"
-            cls.OS_NAME = "win"
+            cls.os_version = u"WINDOWS"
+            cls.os_name = "win"
 
         # Extended support for macos systems
         elif system().lower() == "darwin":
-            os_version = u"MACINTOSH"
-            cls.OS_NAME = "mac"
+            cls.os_version = u"MACINTOSH"
+            cls.os_name = "mac"
 
         # Full support for linux systems
         elif system().lower() == "linux":
@@ -72,26 +128,10 @@ class Sysenv(object):
                     if line.lower().startswith("pretty_name") and pretty_name == "":
                         _, pretty_name = line.split("=", 1)
             os_name = distro.strip()
-            os_version = u"%s (%s)" % (os_name.upper(), pretty_name.strip())
-            cls.OS_NAME = os_name
+            cls.os_version = u"%s (%s)" % (os_name.upper(), pretty_name.strip())
+            cls.os_name = os_name
 
         # Extended or full support for bsd systems
         elif "bsd" in system().lower():
-            os_version =  "BSD"
-            cls.OS_NAME = "bsd"
-
-        # Print version
-        print("Buildok {} [build {}] {}\n".format(version, __build__, os_version))
-
-        # Print disclaimer
-        print('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR')
-        print("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,")
-        print("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE")
-        print("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER")
-        print("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,")
-        print("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE")
-        print("SOFTWARE.\n")
-
-        # Support
-        print("Please report bugs at https://github.com/lexndru/buildok")
-        print("Use --help to see a list of all options\n")
+            cls.os_version = "BSD"
+            cls.os_name = "bsd"

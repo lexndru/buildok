@@ -64,7 +64,7 @@ class Copy(Action):
         self.success("Copied => %d file(s) %d dir(s)" % (files, folders))
 
     @classmethod
-    def _convert_bash(cls, src=None, dst=None, *args, **kwargs):
+    def convert_shell(cls, src=None, dst=None, *args, **kwargs):
         if src is None and dst is None:
             return "echo invalid copy command"
         elif src is None:

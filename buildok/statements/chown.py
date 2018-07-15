@@ -51,7 +51,7 @@ class ChangeOwner(Action):
         ^change user and group to `(?P<owner>.+):(?P<group>.+)`$
         ^set owner and group `(?P<owner>.+):(?P<group>.+)` for `(?P<path>.+)`$
 
-    Sample (input):
+    Sample input:
         1) Run `touch /tmp/buildok_test.txt`.
         2) Change owner to `nobody` on `/tmp/buildok_test.txt`.
 
@@ -82,7 +82,7 @@ class ChangeOwner(Action):
             self.fail(str(e))
 
     @classmethod
-    def _convert_bash(cls, owner=None, group=None, path=None, *args, **kwargs):
+    def convert_shell(cls, owner=None, group=None, path=None, *args, **kwargs):
         if path is None:
             path = "."
         flags = kwargs.get("flags", "")

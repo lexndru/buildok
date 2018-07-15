@@ -27,8 +27,8 @@ from buildok.action import Action
 from buildok.util.log import Log
 
 
-class InstallPackage(Action):
-    r"""Install new software package(s).
+class PipInstallPackage(Action):
+    r"""Install software package(s) with Python's PIP package manager.
 
     Args:
         pkgs (str): Packages to install.
@@ -37,59 +37,36 @@ class InstallPackage(Action):
         str: Human readable descriptor message or error.
 
     Raises:
-        Exception: If any of `pkgs` are not found in repositories.
+        Exception: If any of `pkgs` are not found.
 
     Accepted statements:
-        ^install `(?P<pkgs>.+)`$
+        ^install python packages? `(?P<pkgs>.+)`$
 
     Sample (input):
-        1) Install `vim curl`.
+        1) Install Python package `buildok`.
 
     Expected:
-        Installed 2 new packages
+        Installed 1 Python package(s)
     """
-
-    os_packs = {
-        ("alpine",):            "apk add {packages}",
-        ("debian", "ubuntu"):   "apt-get install -y {packages}",
-        # ("centos", "fedora"):   "yum install {packages}",
-        # ("fedora",):            "dnf install -y {packages}",
-        # ("slackware",):         "slackpkg install {packages}",
-        # ("arch",):              "pacman -S {packages}",
-        # ("gentoo",):            "emerge {packages}",
-    }
 
     def run(self, pkgs=None, *args, **kwargs):
         packages = pkgs.split()
         if len(packages) == 0:
-            return self.fail("No packages to install...")
+            return self.fail("No Python packages to install...")
         try:
-            cmd = InstallPackage.check_install()
-            if cmd is None:
-                return self.fail("Unsupported OS: %s" % self.env.os_name)
-            installed_pkgs = self.install_packages(cmd, packages)
+            installed_pkgs = self.install_packages("pip install {packages}", packages)
             if installed_pkgs > 0:
-                self.success("Installed %d new packages" % installed_pkgs)
+                self.success("Installed %d Python package(s)" % installed_pkgs)
             else:
-                self.fail("Failed to install packages...")
+                self.fail("Failed to install Python packages...")
         except Exception as e:
             self.fail(str(e))
 
     @classmethod
     def convert_shell(cls, pkgs=None, *args, **kwargs):
         if pkgs is None:
-            return "echo Nothing to install"
-        cmd = InstallPackage.check_install()
-        if cmd is not None:
-            return cmd.format(packages=pkgs)
-        return "echo Unable to install packages: %s" % pkgs
-
-    @classmethod
-    def check_install(cls):
-        for oses, cmd in cls.os_packs.iteritems():
-            if cls.env.os_name in oses:
-                return cmd
-        return None
+            return "echo Nothing to install with pip"
+        return "pip install %s" % pkgs
 
     def install_packages(self, cmd, packages):
         installed = 0
@@ -99,7 +76,7 @@ class InstallPackage(Action):
             while install_output.poll() is None:
                 sleep(0.5)
             output = install_output.returncode
-            Log.debug("Running (%s) %s ... %r" % (self.env.os_name, install_cmd, output == 0))
+            Log.debug("Running (pip) %s ... %r" % (install_cmd, output == 0))
             if 0 == output:
                 installed += 1
         return installed

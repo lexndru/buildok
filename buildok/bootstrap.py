@@ -39,11 +39,18 @@ from buildok.util.log import Log
 
 def main(error=None):
 
-    # System check
-    Sysenv.check(__version__)
-
     # Parse command line args
     args = Shell.parse()
+
+    # System setup
+    Sysenv.setup(__version__, args)
+
+    # Check version and exit
+    if args.version:
+        return Sysenv.print_version()
+
+    # Output application intro headers
+    Sysenv.print_headers()
 
     # Set log verbose level
     Log.configure(verbose=args.verbose)

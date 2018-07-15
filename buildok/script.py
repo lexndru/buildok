@@ -20,7 +20,8 @@
 
 from __future__ import print_function
 
-import timeit
+from timeit import default_timer
+from os import getpid
 
 from buildok.statement import Statement
 from buildok.converter import Converter
@@ -35,10 +36,16 @@ from buildok.util.log import Log
 
 
 RUN_INSTRUCTIONS = """
- Buildok is ready! Choose a topic to run, either by it's ID or by name (can
- be partial match as well). During the runtime SIGTERM is ignored. Typing an
- ID or a name that does not exist will restart the promter. The prompter will
- increment with every attempt. Leaving the field blank will end session.
+    Buildok is ready! Choose a topic to run, either by it's ID or by name (can
+    be partial match as well). During the runtime ^C (SIGINT) is ignored. Typing
+    an ID or a name that does not exist will restart the promter. Leaving the
+    field blank will end session.
+"""
+
+WARNING_UNSAFE_SHELL = u"""\033[91m
+    Detected --unsafe-shell option! Use this option on your own risk only if you
+    really know what you're doing! Please check documentation if you're not sure
+    what --unsafe-shell is, or better yet, remove it and update your guide.\033[0m
 """
 
 class Script(object):
@@ -60,6 +67,7 @@ class Script(object):
         self.last_step = 0
         self.guide_topics = None
         self.convert = False
+        self.fake_run = False
         Log.info("Initializing...")
 
     def setup(self):
@@ -87,18 +95,38 @@ class Script(object):
             Log.info("Topic convertion set to: %s" % self.args.convert)
             self.convert = True
 
+        # Toggle fake run
+        self.fake_run = self.args.fake_run
+
     def run(self, ignore_fails=False):
         """Run all steps for the current selected topic.
-
-        Args:
-            convert (bool): Whether to convert steps before exist or not.
         """
 
-        failed = False
+        if self.fake_run:
+            Log.info("Topic '%s' faked run" % self.topic.get_title())
+            Report.set_status("FAKED")
+        else:
+            self.launch_topic(ignore_fails)
+
+        if self.convert:
+            self.launch_convertion()
+
+    def launch_convertion(self):
+        """Convert build steps to target convertion.
+        """
+
+        Log.debug("Converting...")
+        Converter.check() and Converter.save(self.steps)
+        Log.debug("Conversion done!")
+
+    def launch_topic(self, ignore_fails=False, failed=False):
+        """Launch topic and run all steps.
+        """
+
         Log.info("Preparing to run %d steps from topic..." % len(self.topic.get_steps()))
 
         # Loop steps and run each one
-        start_time = timeit.default_timer()
+        start_time = default_timer()
         Log.debug("Setting start time: %s" % start_time)
 
         for self.last_step, step in enumerate(self.steps):
@@ -115,13 +143,17 @@ class Script(object):
                         Report.set_error(output)
                         break
                 Report.inc_step(1)
+            except KeyboardInterrupt:
+                Log.info("Stopping current step...")
+                Log.warn("Interrupting may lead to unexpected results")
+                Log.debug("Stop master process at your own risk (PID %s)" % getpid())
             except Exception as e:
                 failed = True
                 Report.set_error(e)
                 Log.info(u"\033[91m? (Error) %s\033[0m" % str(e))
                 break
 
-        stop_time = timeit.default_timer()
+        stop_time = default_timer()
         Log.debug("Set stop time: %s" % stop_time)
         Log.debug("Runtime %ss" % (stop_time - start_time))
 
@@ -136,10 +168,6 @@ class Script(object):
         else:
             Log.info("Topic '%s' has ran all steps with no errors" % self.topic.get_title())
             Report.set_status("OK")
-        if self.convert and not failed:
-            Log.debug("Converting...")
-            Converter.check() and Converter.save(self.steps)
-            Log.debug("Conversion done!")
         Log.debug("Closing...")
 
     def parse(self):
@@ -179,8 +207,12 @@ class Script(object):
         Log.info("Found the following topics...")
         print("")
         for pos, name in enumerate(topics):
-            print(("%" + str(len(str(topics_len))+1) + "d) %s") % (pos+1, name))
+            print(("%" + str(len(str(topics_len))+5) + "d) %s") % (pos+1, name))
         print(RUN_INSTRUCTIONS)
+
+        # Display warnings
+        if self.args.unsafe_shell:
+            print(WARNING_UNSAFE_SHELL)
 
         # Pair each step with appropriate statement
         self.guide_topics = guide.get_topics()
@@ -233,7 +265,7 @@ class Script(object):
         return []
 
 
-    def get_user_input(self, attempt=1):
+    def get_user_input(self, attempt=0):
         """Prompt user to choose a topic from a list.
 
         Exists if user leaves blank input or hits C^, otherwise continues until
@@ -242,11 +274,14 @@ class Script(object):
 
         # Prompt for input
         try:
-            user_input = raw_input("[%d] > " % attempt)
+            if attempt > 0:
+                print("") # spacing only
+            user_input = raw_input("    >>> choose topic: ")
             attempt += 1
 
         # Exit on C^
         except KeyboardInterrupt:
+            print("") # append newline after ^C
             Report.set_status("Exit")
             raise Exception
 
@@ -262,6 +297,7 @@ class Script(object):
                 raise IndexError
             return self.guide_topics[pos-1]
         except IndexError:
+            print("    <<< topic #%d not found" % pos)
             return self.get_user_input(attempt)
         except Exception:
             pass
@@ -280,6 +316,7 @@ class Script(object):
                     partial_match = each
             if not drop_partial and partial_match is not None:
                 return partial_match
+            print("    <<< topic \"%s\" not found" % topic)
         except Exception:
             pass
 

@@ -61,7 +61,7 @@ class Remove(Action):
             self.fail(str(e))
 
     @classmethod
-    def _convert_bash(cls, src=None, *args, **kwargs):
+    def convert_shell(cls, src=None, *args, **kwargs):
         flags = kwargs.get("flags", "")
         if src is None:
             src = "."

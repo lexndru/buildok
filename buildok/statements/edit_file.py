@@ -58,7 +58,7 @@ class EditFile(Action):
             self.fail(str(e))
 
     @classmethod
-    def _convert_bash(cls, filepath=None, *args, **kwargs):
+    def convert_shell(cls, filepath=None, *args, **kwargs):
         if filepath is None:
             return "echo cannot edit file because of an invalid filepath"
         payload = kwargs.get("payload", "n/a")

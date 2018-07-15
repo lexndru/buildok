@@ -18,12 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import webbrowser as wb
-
-from buildok.action import Action
+from buildok.statements.web import ViewWeb
 
 
-class WikipediaSearch(Action):
+class WikipediaSearch(ViewWeb):
     r"""Open a Wikipedia search in default browser.
 
     Args:
@@ -42,21 +40,13 @@ class WikipediaSearch(Action):
         1) Wikipedia `buildok`.
 
     Expected:
-        Wikipedia results => https://duckduckgo.com/?q=buildok
+        Wikipedia results => https://wikipedia.org/wiki/buildok
     """
 
     def run(self, search=None, *args, **kwargs):
         url = r"https://wikipedia.org/wiki/{}".format(search)
-        try:
-            wb.get().open(url, new=2)
+        error = self.open_url(url)
+        if error is not None:
+            self.fail(error)
+        else:
             self.success("Wikipedia results => %s" % url)
-        except TypeError as e:
-            self.fail(str(e))
-        except Exception as e:
-            self.fail("Cannot open \"%s\"" % url)
-
-    @classmethod
-    def _convert_bash(cls, search=None, *args, **kwargs):
-        if search is None:
-            return "echo Nothing to lookup"
-        return "echo Cannot lookup on wikipedia \"%s\"" % search

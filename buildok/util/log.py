@@ -26,7 +26,7 @@ class Log(object):
     """
 
     config = {
-        r"format": r"%(asctime)-15s %(message)s"
+        r"format": u"%(levelname)8s %(asctime)-15s \033[90m|\033[0m %(message)s"
     }
 
     @classmethod
@@ -52,5 +52,5 @@ class Log(object):
 
     @classmethod
     def fatal(cls, message):
-        cls.error(message)
+        logging.critical(message)
         raise SystemExit(message)

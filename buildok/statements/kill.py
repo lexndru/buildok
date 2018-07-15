@@ -66,7 +66,7 @@ class KillProcess(Action):
             self.fail(str(e))
 
     @classmethod
-    def _convert_bash(cls, pid=None, pname=None, *args, **kwargs):
+    def convert_shell(cls, pid=None, pname=None, *args, **kwargs):
         if pid is not None:
             return "kill %s" % pid
         elif pname is not None:

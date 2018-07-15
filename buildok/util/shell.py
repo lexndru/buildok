@@ -71,6 +71,21 @@ class Shell(object):
             "dest": "install_policy",
             "help": "set or install a system utility policy"
         },
+        (None, "--fake-run"): {
+            "action": "store_true",
+            "dest": "fake_run",
+            "help": "read and parse guide without actually running on machine"
+        },
+        (None, "--unsafe-shell"): {
+            "action": "store_true",
+            "dest": "unsafe_shell",
+            "help": "spawn a process to inject shell commands provided by RUN"
+        },
+        (None, "--package-manager"): {
+            "action": "store",
+            "dest": "package_manager",
+            "help": "set absolute path to package manager (used to overwrite package manager for install steps)"
+        },
         (None, "--version"): {
             "action": "store_true",
             "dest": "version",

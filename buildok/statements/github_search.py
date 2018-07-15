@@ -18,12 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import webbrowser as wb
-
-from buildok.action import Action
+from buildok.statements.web import ViewWeb
 
 
-class GitHubSearch(Action):
+class GitHubSearch(ViewWeb):
     r"""Open a GitHub search in default browser.
 
     Args:
@@ -47,16 +45,8 @@ class GitHubSearch(Action):
 
     def run(self, search=None, *args, **kwargs):
         url = r"https://github.com/search?q={}".format(search)
-        try:
-            wb.get().open(url, new=2)
+        error = self.open_url(url)
+        if error is not None:
+            self.fail(error)
+        else:
             self.success("Lookup results => %s" % url)
-        except TypeError as e:
-            self.fail(str(e))
-        except Exception as e:
-            self.fail("Cannot open \"%s\"" % url)
-
-    @classmethod
-    def _convert_bash(cls, search=None, *args, **kwargs):
-        if search is None:
-            return "echo Nothing to lookup"
-        return "echo Cannot lookup \"%s\"" % search

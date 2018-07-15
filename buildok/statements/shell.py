@@ -47,9 +47,15 @@ class ShellExec(Action):
     """
 
     def run(self, cmd=None, *args, **kwargs):
-        cmd_call = cmd_split(cmd)
+        safe_cmd = cmd_split(cmd)
+        output_args = {"stderr": STDOUT}
+        if self.env.shell_args is not None:
+            if self.env.shell_args.unsafe_shell:
+                output_args.update({"shell": True})
+            else:
+                cmd = safe_cmd
         try:
-            output = check_output(cmd_call, stderr=STDOUT)
+            output = check_output(cmd, **output_args)
             if output is None:
                 output = "n/a"
             self.success(u"Output => %s" % output.decode('utf-8').strip())
@@ -59,7 +65,7 @@ class ShellExec(Action):
             self.fail(str(e))
 
     @classmethod
-    def _convert_bash(cls, cmd=None, *args, **kwargs):
+    def convert_shell(cls, cmd=None, *args, **kwargs):
         if cmd is None:
             return "echo Invalid script or missing cmd"
         return cmd

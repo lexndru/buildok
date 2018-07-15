@@ -20,82 +20,51 @@
 
 from __future__ import print_function
 
-from re import compile
-from importlib import import_module
-
-from buildok.statement import Statement
 from buildok.parser import Parser
+from buildok.statement import Statement
 
-class Tester(object):
-
-    IMPORT_PATTERN = compile(r"^from\s+(?P<mod>buildok\.statements\.\w+)\s+import\s+(?P<stmt>\w+)$")
-    STATEMENT_PY = "buildok/statement.py"
-    STATEMENTS_MOD = "buildok.statements"
-    TEST_INPUT_OUTPUT = ("sample input", "expected")
-
-    @classmethod
-    def scan(cls):
-        imports, ctx = [], []
-        with open(cls.STATEMENT_PY) as file_:
-            ctx = file_.readlines()
-        for line in ctx:
-            if not line.startswith("from"):
-                continue
-            result = cls.IMPORT_PATTERN.match(line)
-            if result is None:
-                continue
-            statement = result.group("stmt").strip()
-            module = result.group("mod").strip()
-            imports.append((module, statement))
-        return imports
-
-    @classmethod
-    def launch_test(cls, module, func):
-        tin, tout = cls.TEST_INPUT_OUTPUT
-        mod = import_module(module)
-        if not hasattr(mod, func):
-            raise ImportError
-        test = getattr(mod, func)
-        test_doc = test.__doc__.split("\n")
-        steps = Parser.parse(test_doc, [tin])
-        if not Parser.all_valid(steps):
-            raise ImportError
-        expected = Parser.parse(test_doc, [tout])
-        pr = Parser(tuple(steps))
-        pr.prepare()
-        return pr, test, expected
-
-    @classmethod
-    def run_test(cls, imports):
-        module, func = imports
-        output = "n/a"
-        try:
-            pr, test, expected = cls.launch_test(module, func)
-            if len(expected) != 1:
-                raise Exception("Incomplete or invalid test: no expectations")
-            else:
-                expected = expected[0]
-            print("[Test] Running tests on %s" % module)
-            while pr.has_step():
-                step = pr.get_step()
-                print("[Test]  ", step)
-                stmt = Statement(step)
-                output = stmt.run()
-                if output is None:
-                    raise Exception("Unexpected statement '%s', maybe misspeled" % step)
-            assert output == expected, "Expected '%s' got '%s'" % (expected, output)
-            print(u"[Test] \033[92mPassed OK %s\033[0m" % module)
-        except ImportError:
-            print(u"[Test] \033[93mMissing test: %s\033[0m" % module)
-        except AssertionError as e:
-            print(u"[Test] \033[101mFailed %s: %s\033[0m" % (module, e))
-        except Exception as e:
-            print(u"[Test] \033[91mError %s: %s\033[0m" % (module, e))
-        print("[Test]", "-" * 50)
 
 def main():
-    for t in Tester.scan():
-        try:
-            Tester.run_test(t)
-        except Exception as e:
-            raise
+
+    # Load statemets
+    Statement.prepare()
+
+    # Holder
+    not_testing = []
+
+    # Loop all actions
+    for action in Statement.get_actions():
+
+        # Get name and description
+        action_name = action.__name__
+        action_desc = action.parse_description()
+
+        # Get input and output
+        data_in = Parser.lookahead(unicode(action.__doc__), "sample input")
+        data_out = Parser.lookahead(unicode(action.__doc__), "expected")
+
+        # Avoid actions with no tests
+        if len(data_in) == 0:
+            not_testing.append((action_name, action_desc))
+            continue
+
+        # Validate action
+        print("Testing... %s (%s)" % (action_name, action_desc))
+
+        for line in data_in:
+            print(" " * 10, line.strip())
+            for exp, handler in Statement.get_statements():
+                args = exp.match(line.strip())
+                if args is not None:
+                    output = handler.run(**args.groupdict())
+                    print(output)
+                    break
+
+        for line in data_out:
+            print("Results...", line.strip())
+        print("\n")
+
+    # Print actions with no tests
+    print("-" * 10, "\nNot tested...")
+    for each in not_testing:
+        print(" - %s (%s)" % each)

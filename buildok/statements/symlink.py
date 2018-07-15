@@ -59,7 +59,7 @@ class MakeSymlink(Action):
             self.fail(str(e))
 
     @classmethod
-    def _convert_bash(cls, src=None, dst=None, *args, **kwargs):
+    def convert_shell(cls, src=None, dst=None, *args, **kwargs):
         if src is None and dst is None:
             return "echo invalid ln command"
         elif src is None:

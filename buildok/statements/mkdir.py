@@ -56,7 +56,7 @@ class MakeDir(Action):
             self.fail(str(e))
 
     @classmethod
-    def _convert_bash(cls, path=None, *args, **kwargs):
+    def convert_shell(cls, path=None, *args, **kwargs):
         if path is not None:
             return "mkdir -p %s" % path
         return "echo cannot create folder because of invalid path"

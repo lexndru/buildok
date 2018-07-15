@@ -63,7 +63,7 @@ class ChangeMod(Action):
             self.fail(str(e))
 
     @classmethod
-    def _convert_bash(cls, mode="400", path=None, *args, **kwargs):
+    def convert_shell(cls, mode="400", path=None, *args, **kwargs):
         if path is None:
             path = "."
         flags = kwargs.get("flags", "")

@@ -56,7 +56,7 @@ class ChangeDir(Action):
             self.fail(str(e))
 
     @classmethod
-    def _convert_bash(cls, path=None, *args, **kwargs):
+    def convert_shell(cls, path=None, *args, **kwargs):
         if path is None:
             path = "."
         return "cd %s" % path
