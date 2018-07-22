@@ -21,17 +21,78 @@
 from __future__ import print_function
 
 import timeit
+import sys
+import traceback
+
+
+def traceback_error():
+    """For debug only. Traceback to error
+
+    Outputs traceback stack to error.
+    """
+    try:
+        _, _, tb = sys.exc_info()
+        for line in traceback.extract_tb(tb):
+            print(" ".join([str(e) for e in line]))
+    except:
+        pass
+
 
 class Console(object):
     """Console wrapper.
 
     Attributes:
         start_time (int): Start time of console logging.
-        stop_time (int): Stop time of console logging.
-        verbose (bool): Set verbose level on or off.
+        stop_time  (int): Stop time of console logging.
+        verbose   (bool): Set verbose level on or off.
     """
     start_time, stop_time = 0, 0
     verbose = False
+
+    @classmethod
+    def darkgray(cls, text, *args):
+        """Print text in dark gray color.
+
+        Return:
+            str: Colored text.
+        """
+        return u"\033[90m{}\033[0m {}".format(text, " ".join(args))
+
+    @classmethod
+    def green(cls, text, *args):
+        """Print text in green color.
+
+        Return:
+            str: Colored text.
+        """
+        return u"\033[92m{}\033[0m {}".format(text, " ".join(args))
+
+    @classmethod
+    def cyan(cls, text, *args):
+        """Print text in cyan color.
+
+        Return:
+            str: Colored text.
+        """
+        return u"\033[96m{}\033[0m {}".format(text, " ".join(args))
+
+    @classmethod
+    def yellow(cls, text, *args):
+        """Print text in yellow color.
+
+        Return:
+            str: Colored text.
+        """
+        return u"\033[93m{}\033[0m {}".format(text, " ".join(args))
+
+    @classmethod
+    def red(cls, text, *args):
+        """Print text in red color.
+
+        Return:
+            str: Colored text.
+        """
+        return u"\033[91m{}\033[0m {}".format(text, " ".join(args))
 
     @classmethod
     def log(cls, message=None):
@@ -104,6 +165,7 @@ class Console(object):
         def __init__(self, err):
             error = u"\033[91m[Fatal] %s\033[0m" % unicode(err)
             super(self.__class__, self).__init__(error)
+            traceback_error()
 
     class debug(Exception):
         """Console debug error message.
@@ -114,6 +176,7 @@ class Console(object):
         def __init__(self, err):
             error = u"\033[93m[Error] %s\033[0m" % unicode(err)
             super(self.__class__, self).__init__(error)
+            traceback_error()
 
 
 def timeit_log(func):

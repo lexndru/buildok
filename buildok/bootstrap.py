@@ -18,106 +18,89 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
+from os import environ
+
+from buildok.version import __version__
+
 from buildok.statement import Statement
-from buildok.parser import Parser
-from buildok.reader import Reader
+from buildok.script import Script
+from buildok.report import Report
+from buildok.action import Action
+from buildok.placeholder import Placeholder
 
-from buildok.readers.file import FileReader
-from buildok.readers.read_me import ReadmeReader
-
-from buildok.util.console import Console, timeit_log
+from buildok.util.console import Console
 from buildok.util.shell import Shell
-from buildok.util.analyze import analyze
+from buildok.util.analyze import self_analyze, analyze, crash
 from buildok.util.locker import lock, unlock
+from buildok.util.lookup import scan_lookup
+from buildok.util.sysenv import Sysenv
+from buildok.util.log import Log
 
-from buildok.converter import Converter
 
+def main(error=None):
 
-def setup():
-    """Setup project path and verbose level.
-
-    Raises:
-        SystemExit: If any error occurs while parsing command line arguments.
-
-    Return:
-        bool: True if setup is done, otherwise False.
-    """
+    # Parse command line args
     args = Shell.parse()
+
+    # System setup
+    Sysenv.setup(__version__, args)
+
+    # Check version and exit
+    if args.version:
+        return Sysenv.print_version()
+
+    # Output application intro headers
+    Sysenv.print_headers()
+
+    # Set log verbose level
+    Log.configure(verbose=args.verbose)
+
+    # Set console verbose level
     Console.verbose = args.verbose
+
+    # Prepare all statements
+    Statement.prepare()
+
+    # Lookup statement and example usage
+    if args.lookup is not None:
+        return scan_lookup(Statement, args.lookup)
+
+    # Run analysis and exit
     if args.analyze:
-        [Console.log(s) for s in analyze(Statement)]
-        return None
-    if args.project is not None:
-        Reader.filepath = args.project
-    if args.convert is not None:
-        Converter.prepare(args.convert, Statement)
-    return True
+        return analyze(Statement)
 
+    # Self-analyze buildok and continue or crash
+    self_analyze(None, Statement) or crash("Run an analyze and correct problems")
 
-def read(first=True):
-    """Read all posible sources.
+    # Setup placeholders
+    Placeholder.config(args.placeholder)
 
-    Args:
-        first (bool): Return steps from first source only.
+    # Attach system environment to all actions
+    Action.set_env(Sysenv)
 
-    Return:
-        tuple: Returns build steps.
-    """
-    fr = FileReader()
-    if not fr.exists():
-        rr = ReadmeReader()
-        if not rr.exists():
-            raise Console.fatal("Nothing to build from...")
-        else:
-            Console.info("Building from README")
-    else:
-        Console.info("Building from file")
-    steps = Reader.get_first() if first else Reader.get_all()
-    for s in steps:
-        if Parser.is_valid(s):
-            Console.info("  %s" % s)
-        else:
-            Console.warn("  %s <--- bad grammar" % s)
-    return steps
+    # Initialize script and run all steps
+    guide_script = Script(args)
+    guide_script.setup()
 
-
-def run(steps, last_step="n/a"):
-    """Parse steps and build.
-
-    Args:
-        steps (tuple): Ordonated list of build steps.
-        last_step (str): Last known step.
-
-    Raises:
-        SystemExit: If build steps are invalid.
-        IOError: If build steps link to invalid I/O operations.
-    """
-    pr = Parser(steps)
-    pr.prepare(validate=True)
-    while pr.has_step():
-        step = pr.get_step()
-        if step is None:
-            raise Console.fatal("Unexpected step found after: %s" % last_step)
-        Console.info(step)
-        stmt = Statement(step)
-        results = stmt.run()
-        Console.eval(results)
-        last_step = step
-    Converter.check() and Converter.save()
-
-
-@timeit_log
-def main():
+    # Create a lock file
     lock()
-    if not setup():
-        return unlock()
-    steps = read()
-    if len(steps) == 0:
-        unlock()
-        raise Console.fatal("Nothing to build")
     try:
-        run(steps)
+
+        # Parse guide and run all steps
+        guide_script.parse().run()
+
     except Exception as e:
-        unlock()
-        raise Console.fatal(e)
-    return unlock()
+        if str(e) != "":
+            error = e
+
+    # Free lock file
+    unlock()
+
+    # Display report
+    guide_script.print_report()
+
+    # Throw any errors found...
+    if environ.get("DEBUG") is not None and error is not None:
+        raise Console.fatal(error)

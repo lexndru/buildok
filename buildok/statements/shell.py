@@ -18,9 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from shlex import split as cmd_split
 from subprocess import check_output, CalledProcessError, STDOUT
 
-def exec_shell(cmd=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class ShellExec(Action):
     r"""Run a command in shell.
 
     Args:
@@ -33,18 +37,35 @@ def exec_shell(cmd=None, *args, **kwargs):
         OSError: If an invalid `cmd` is provided.
 
     Accepted statements:
-        ^run `(?P<cmd>.+)`[\.\?\!]$
+        ^run `(?P<cmd>.+)`$
 
     Sample input:
-        1) Run `echo hello friend how are you`.
+        - Run `echo hello friend how are you`.
 
     Expected:
-        hello friend how are you
+        Output => hello friend how are you
     """
-    try:
-        output = check_output(cmd.split(), stderr=STDOUT)
-    except CalledProcessError as e:
-        return e.output
-    if output is None:
-        return "n/a"
-    return output.decode('utf-8').strip()
+
+    def run(self, cmd=None, *args, **kwargs):
+        safe_cmd = cmd_split(cmd)
+        output_args = {"stderr": STDOUT}
+        if self.env.shell_args is not None:
+            if self.env.shell_args.unsafe_shell:
+                output_args.update({"shell": True})
+            else:
+                cmd = safe_cmd
+        try:
+            output = check_output(cmd, **output_args)
+            if output is None:
+                output = "n/a"
+            self.success(u"Output => %s" % output.decode('utf-8').strip())
+        except CalledProcessError as e:
+            self.fail(e.output)
+        except Exception as e:
+            self.fail(str(e))
+
+    @classmethod
+    def convert_shell(cls, cmd=None, *args, **kwargs):
+        if cmd is None:
+            return "echo Invalid script or missing cmd"
+        return cmd

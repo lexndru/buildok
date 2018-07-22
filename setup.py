@@ -2,11 +2,17 @@
 
 from setuptools import setup
 
+
+long_description = """
+A tool to automate build steps from README files.
+"""
+
 setup(name="buildok",
     packages=[
         "buildok",
         "buildok.readers",
         "buildok.statements",
+        "buildok.structures",
         "buildok.util",
         "buildok.converters",
     ],
@@ -15,16 +21,17 @@ setup(name="buildok",
             "build = buildok.bootstrap:main"
         ]
     },
-    version="0.2.5",
+    version="0.4.0",
     description="A tool to automate build steps from README files.",
+    long_description=long_description,
     author="Alexandru Catrina",
     author_email="alex@codeissues.net",
     license="MIT",
     url="https://github.com/lexndru/buildok",
-    download_url="https://github.com/lexndru/buildok/archive/v0.2.5.tar.gz",
+    download_url="https://github.com/lexndru/buildok/archive/v0.4.0.tar.gz",
     keywords=["build-tool", "build-automation", "readme", "buildok"],
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: End Users/Desktop",
         "Topic :: Software Development :: Build Tools",

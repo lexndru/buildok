@@ -20,19 +20,21 @@
 
 from argparse import ArgumentParser
 
+
 class Shell(object):
     """Shell argument parser.
 
     Attributes:
         parser (ArgumentParser): Argument parser.
-        args (dict): Dictionary of arguments.
+        args             (dict): Dictionary of arguments.
     """
+
     parser = ArgumentParser(description="A tool to automate build steps from README files")
     args = {
-        ("-p", "--project"): {
+        ("-g", "--guide"): {
             "action": "store",
-            "dest": "project",
-            "help": "path to project"
+            "dest": "guide",
+            "help": "path to guide"
         },
         ("-v", "--verbose"): {
             "action": "store_true",
@@ -49,15 +51,76 @@ class Shell(object):
             "dest": "analyze",
             "help": "scan all known statements"
         },
+        ("-l", "--lookup"): {
+            "action": "store",
+            "dest": "lookup",
+            "help": "analyze and lookup statement with example"
+        },
+        ("-t", "--topic"): {
+            "action": "store",
+            "dest": "topic",
+            "help": "set topic to build"
+        },
+        (None, "--topic-pattern"): {
+            "action": "store",
+            "dest": "topic_pattern",
+            "help": "set topic pattern"
+        },
+        ("-p", "--preview"): {
+            "action": "store_true",
+            "dest": "preview",
+            "help": "visual preview of scanned guide"
+        },
+        (None, "--install-policy"): {
+            "action": "store",
+            "dest": "install_policy",
+            "help": "set or install a system utility policy"
+        },
+        (None, "--fake-run"): {
+            "action": "store_true",
+            "dest": "fake_run",
+            "help": "read and parse guide without actually running on machine"
+        },
+        (None, "--strict"): {
+            "action": "store_true",
+            "dest": "strict",
+            "help": "don't ignore unsupported steps from guide"
+        },
+        (None, "--unsafe-shell"): {
+            "action": "store_true",
+            "dest": "unsafe_shell",
+            "help": "spawn a process to inject shell commands provided by RUN"
+        },
+        (None, "--package-manager"): {
+            "action": "store",
+            "dest": "package_manager",
+            "help": "set absolute path to package manager (used to overwrite package manager for install steps)"
+        },
+        (None, "--version"): {
+            "action": "store_true",
+            "dest": "version",
+            "help": "display version number"
+        },
+        (None, "--config-file"): {
+            "action": "store",
+            "dest": "config_file",
+            "help": "set path to configuration file"
+        },
+        (None, "--placeholder"): {
+            "action": "append",
+            "dest": "placeholder",
+            "help": "set value to replace placeholder"
+        },
     }
 
     @classmethod
     def parse(cls):
-        """Ceate parser listener.
+        """Create parser listener.
 
         Return:
             Namespace: Namespace of parser arguments from shell.
         """
+
         for keys, vals in cls.args.iteritems():
             short, long_ = keys
             if short is None:

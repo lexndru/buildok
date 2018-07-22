@@ -20,7 +20,10 @@
 
 from shutil import move
 
-def move_files(src=None, dst=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class Move(Action):
     r"""Move files from a given source to a given destination.
 
     Args:
@@ -34,21 +37,32 @@ def move_files(src=None, dst=None, *args, **kwargs):
         OSError: If an invalid `src` or `dst` is provided.
 
     Accepted statements:
-        ^move from `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
-        ^move `(?P<src>.+)` files to `(?P<dst>.+)`[\.\?\!]$
-        ^rename `(?P<src>.+)` to `(?P<dst>.+)`[\.\?\!]$
+        ^move from `(?P<src>.+)` to `(?P<dst>.+)`$
+        ^move `(?P<src>.+)` files to `(?P<dst>.+)`$
+        ^rename `(?P<src>.+)` to `(?P<dst>.+)`$
 
     Sample input:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder_move`.
-        3) Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
+        - Go to `/tmp`.
+        - Create folder `buildok_test_folder_move`.
+        - Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
 
     Expected:
         Moved buildok_test_folder_move => buildok_test_folder_moved
     """
-    try:
-        move(src, dst)
-        return "Moved %s => %s" % (src, dst)
-    except OSError as e:
-        raise e
-    return "Nothing to move"
+
+    def run(self, src=None, dst=None, *args, **kwargs):
+        try:
+            move(src, dst)
+            self.success("Moved %s => %s" % (src, dst))
+        except OSError as e:
+            self.fail(str(e))
+
+    @classmethod
+    def convert_shell(cls, src=None, dst=None, *args, **kwargs):
+        if src is None and dst is None:
+            return "echo invalid move command"
+        elif src is None:
+            src = "."
+        elif dst is None:
+            dst = "."
+        return "mv %s %s" % (src, dst)

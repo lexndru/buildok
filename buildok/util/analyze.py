@@ -18,36 +18,90 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from buildok.parser import Parser
+from __future__ import print_function
 
-def analyze(Stmt):
-    """Analyze all statements.
+from buildok.util.log import Log
+
+
+class UnicodeIcon(object):
+
+    VALID = u"\033[92m\u2713\033[0m"
+    INVALID = u"\033[91m\u237B\033[0m"
+
+
+def crash(message):
+    """Crash application with message.
+
+    Raises:
+        SystemExit.
+    """
+
+    return Log.fatal("Unexpected crash! %s" % message)
+
+
+def scan_statements(statement):
+    """Scans all statements.
 
     Returns:
-        list: List of all statements including duplicated.
+        dict: Dictionary of all statements with a counter.
     """
-    results, stmts = [], set([])
-    for idx1, func in enumerate(Stmt.known_actions):
-        class_ = func.__name__
-        lines = func.__doc__.split("\n")
-        funcs = Parser.parse(lines, [Stmt.statement_header], False)
-        for idx2, stmt in enumerate(funcs):
-            status = "duplicated" if stmt in stmts else "ok"
-            line = ("%d.%d" % (idx1+1, idx2+1), class_, stmt, status)
-            results.append(line)
-            stmts.add(stmt)
-    set_max = lambda o, s: len(s) if len(s) > o else o
-    ids_max_len, grp_max_len, stmt_max_len, status_max_len = 0, 0, 0, 0
-    for ids, grp, stmt, status in results:
-        ids_max_len, grp_max_len = set_max(ids_max_len, ids), set_max(grp_max_len, grp)
-        stmt_max_len, status_max_len = set_max(stmt_max_len, stmt), set_max(status_max_len, status)
-    line = "| %-" + str(ids_max_len) + "s | %-" + str(grp_max_len) + "s | "
-    line += "%-" + str(stmt_max_len) + "s | %-" + str(status_max_len) + "s |"
-    header = line % ("", "Group", "Statement", "")
-    sep = "-" * len(header)
-    lines = [header, sep]
-    for r in results:
-        color = "\033[101m" if r[-1] == "duplicated" else "\033[94m"
-        lines.append((color + line + "\033[0m") % r)
-    lines.append(sep)
+
+    lines = {}
+    if statement is None:
+        return lines
+    for action in statement.get_actions():
+        for line in action.parse_statements():
+            if lines.get(line) is None:
+                lines.update({line: 0})
+            lines[line] += 1
     return lines
+
+
+def self_analyze(lines=None, statement=None):
+    """Self analyze for errors.
+
+    Returns:
+        bool: True if all statements are ok, otherwise False.
+    """
+
+    if lines is None:
+        lines = scan_statements(statement)
+    return all([v == 1 for v in lines.itervalues()])
+
+
+def analyze(statement, length=80):
+    """Analyze all statements and print visual results.
+
+    Returns:
+        bool: True if all statements are ok, otherwise False.
+    """
+
+    lines = scan_statements(statement)
+    results = self_analyze(lines)
+    Log.debug("Listing all statements...")
+    for action in statement.get_actions():
+        try:
+            text = action.parse_description()
+        except:
+            text = "no description"
+        print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % ("-" * (length-4)))
+        print(u"\033[90m|   |\033[0m \033[96m%-{}s\033[0m \033[90m|\033[0m".format(length-6) % text)
+        print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % ("-" * (length-4)))
+        for line in action.parse_statements():
+            if lines[line] > 1:
+                status = UnicodeIcon.INVALID
+                line_text = u"\033[91m%-{}s\033[0m".format(length-6) % line.strip()
+            else:
+                status = UnicodeIcon.VALID
+                line_text = u"\033[92m%-{}s\033[0m".format(length-6) % line.strip()
+            print(u"\033[90m|\033[0m %s \033[90m|\033[0m %s \033[90m|\033[0m" % (status, line_text))
+    print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % ("-" * (length-4)))
+    if not results:
+        Log.error("Duplicated statements found!")
+        for line, times in lines.iteritems():
+            if times > 1:
+                Log.error(" - line duplicated %d times: %s" % (times, line.strip()))
+        Log.error("Please correct these problems before running again.")
+    else:
+        Log.debug("Everything looks OK!")
+    return results

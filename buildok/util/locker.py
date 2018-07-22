@@ -20,9 +20,12 @@
 
 import os
 
+from buildok.util.log import Log
+
 
 WORKING_DIR = os.getcwd()
 LOCK_FILE = os.path.join(WORKING_DIR, ".build.lock")
+
 
 def lock():
     """Create a lock file.
@@ -30,10 +33,12 @@ def lock():
     Raises:
         SystemExit: If a lock file already exists.
     """
+
     if os.path.isfile(LOCK_FILE):
         raise SystemExit("A build might be launched by another process")
     with open(LOCK_FILE, "a") as _:
         os.utime(LOCK_FILE, None)
+        Log.info("Created temporary lock")
 
 
 def unlock():
@@ -42,5 +47,7 @@ def unlock():
     Raises:
         OSError: If lock file cannot be released.
     """
+
     if os.path.isfile(LOCK_FILE):
         os.remove(LOCK_FILE)
+        Log.info("Removed temporary lock")

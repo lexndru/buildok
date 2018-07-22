@@ -20,7 +20,10 @@
 
 import webbrowser as wb
 
-def exec_web(url=None, *args, **kwargs):
+from buildok.action import Action
+
+
+class ViewWeb(Action):
     r"""Open a link in default browser.
 
     Args:
@@ -33,19 +36,36 @@ def exec_web(url=None, *args, **kwargs):
         TypeError: If an invalid `url` is provided.
 
     Accepted statements:
-        ^open in browser `(?P<url>.+)`[\.\?\!]$
-        ^open link `(?P<url>.+)`[\.\?\!]$
-        ^open url `(?P<url>.+)`[\.\?\!]$
+        ^open in browser `(?P<url>.+)`$
+        ^open (?:link|url) `(?P<url>.+)`$
 
     Sample (input):
-        1) Open link `https://github.com/lexndru/buildok`.
+        - Open link `https://github.com/lexndru/buildok`.
 
     Expected:
         Opened URL in browser => https://github.com/lexndru/buildok
     """
-    try:
-        wb.get().open(url, new=2)
-        return "Opened URL in browser => %s" % url
-    except TypeError as e:
-        raise e
-    return "Nothing to do"
+
+    def run(self, url=None, *args, **kwargs):
+        error = self.open_url(url)
+        if error is not None:
+            self.fail(error)
+        else:
+            self.success("Opened URL in browser => %s" % url)
+
+    def open_url(self, url):
+        try:
+            wb.get().open(url, new=2)
+        except wb.Error as e:
+            return str(e)
+        except TypeError as e:
+            return str(e)
+        except Exception as e:
+            return "Cannot open \"%s\": %s" % (url, str(e))
+        return None
+
+    @classmethod
+    def convert_shell(cls, url=None, *args, **kwargs):
+        if url is None:
+            return "echo Cannot open browser: URL is missing?"
+        return "echo Cannot open URL in browser: %s" % url

@@ -18,94 +18,152 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import re
+from re import compile, IGNORECASE, UNICODE
 
-from buildok.parser import Parser
+from buildok.statements.chdir import ChangeDir
+from buildok.statements.mkdir import MakeDir
+from buildok.statements.symlink import MakeSymlink
+from buildok.statements.web import ViewWeb
+from buildok.statements.google import GoogleSearch
+from buildok.statements.duckduckgo import DuckDuckGoSearch
+from buildok.statements.wikipedia import WikipediaSearch
+from buildok.statements.github_search import GitHubSearch
+from buildok.statements.shell import ShellExec
+from buildok.statements.chmod import ChangeMod
+from buildok.statements.chown import ChangeOwner
+from buildok.statements.kill import KillProcess
+from buildok.statements.copy import Copy
+from buildok.statements.move import Move
+from buildok.statements.remove import Remove
+from buildok.statements.touch import Touch
+from buildok.statements.edit_file import EditFile
+from buildok.statements.install_pip import PipInstallPackage
+from buildok.statements.install_npm import NpmInstallPackage
+from buildok.statements.install import InstallPackage
+from buildok.statements.uninstall import UninstallPackage
+from buildok.statements.reinstall import ReinstallPackage
+from buildok.statements.service_enable import EnableService
+from buildok.statements.service_disable import DisableService
+from buildok.statements.service_status import StatusService
+from buildok.statements.service_start import StartService
+from buildok.statements.service_stop import StopService
+from buildok.statements.service_restart import RestartService
+from buildok.statements.service_reload import ReloadService
+from buildok.statements.listdir import ListDir
+from buildok.statements.invoke import InvokeTopic
+from buildok.statements.noop import Noop
 
-from buildok.statements.web import exec_web
-from buildok.statements.shell import exec_shell
-from buildok.statements.chdir import change_dir
-from buildok.statements.chmod import change_mod
-from buildok.statements.chown import change_own
-from buildok.statements.mkdir import make_dir
-from buildok.statements.kill import kill_proc
-from buildok.statements.copy import copy_files
-from buildok.statements.move import move_files
-from buildok.statements.remove import remove_files
-from buildok.statements.symlink import make_symlink
+from buildok.util.log import Log
+
 
 class Statement(object):
-    """Statement parser.
+    """Statement parser and launcher.
 
     Attributes:
-        statement_header (str): Lookup string before build steps.
-        known_actions (frozen set): Set of all known statements and actions.
-        step (str): Raw step statement.
-        stmt (func): Matched statement from `known_actions`.
-        statements (list): List of all statements.
+        actions (frozen set): Set of all known statements and actions.
+        statements    (list): List of all statements.
+        ready         (bool): Setup flag to determine status.
     """
-    statements = []
-    statement_header = r"accepted statements"
-    known_actions = {
-        exec_web,
-        exec_shell,
-        change_dir,
-        change_mod,
-        change_own,
-        copy_files,
-        move_files,
-        remove_files,
-        make_symlink,
-        make_dir,
-        kill_proc,
+
+    __actions = {
+        ChangeDir,        # Change current working directory.
+        MakeDir,          # Make a directory or make recursive directories.
+        MakeSymlink,      # Make a symlink for a target source
+        ViewWeb,          # Open a link in default browser.
+        GoogleSearch,     # Perform a Google search and open default browser.
+        DuckDuckGoSearch, # Perform a DuckDuckGo search and open default browser.
+        WikipediaSearch,  # Perform a Wikipedia search and open default browser.
+        GitHubSearch,     # Open a GitHub search in default browser.
+        ShellExec,        # Run a command in shell.
+        ChangeMod,        # Change permissions on file or directory.
+        ChangeOwner,      # Change owner and group on file or directory.
+        Copy,             # Copy files from a given source to a given destination.
+        Move,             # Move files from a given source to a given destination.
+        Remove,           # Remove files from a given source.
+        KillProcess,      # Send SIGTERM signal to a process.
+        Touch,            # Create a new file.
+        EditFile,         # Edit content of an existing file.
+        PipInstallPackage,# Install Python packages.
+        NpmInstallPackage,# Install Node.js packages.
+        InstallPackage,   # Install new package software.
+        UninstallPackage, # Uninstall package software.
+        ReinstallPackage, # Reinstall package software.
+        InvokeTopic,      # Invoke new topic from guide.
+        Noop,             # No operation; nothing to do.
+        EnableService,    # Enable service at boot time.
+        DisableService,   # Disable service at boot time.
+        StatusService,    # Get status of service.
+        StartService,     # Start new service.
+        StopService,      # Stop running service.
+        RestartService,   # Restart running service.
+        ReloadService,    # Reload service configuration.
+        ListDir,          # List files and directories from directory.
     }
 
-    def __init__(self, step):
-        self.step = step
-        self.stmt, self.args = self.parse()
-        self.statements.append(self)
+    statements = {}
+    ready = False
 
-    def __str__(self):
-        return "Step: %s\nStatement: %s\nArguments: %s" % (self.step, self.stmt.__name__, self.args)
+    @classmethod
+    def prepare(cls):
+        """Statement initialization.
 
-    def run(self):
-        """Run statement and return output.
-
-        Returns:
-            str: Output from statement.
-        """
-        return self.stmt(**self.args)
-
-    def parse(self):
-        """Translate a step into a statement.
-
-        Return:
-            NoneType: If no statement was found, otherwise mixt.
-        """
-        for func in self.known_actions:
-            for stmt in self.parse_func(func):
-                result = re.match(stmt, self.step, re.I)
-                if result is None:
-                    continue
-                return func, result.groupdict()
-        return None
-
-    def parse_func(self, func, statement_header=None, test=False):
-        """Extract "accepted statements" from function doc string.
-
-        Args:
-            func (function): Statement function equivalent.
-            statement_header (str): Headline to look up (default None).
-
-        Raises:
-            SystemExit: If `func` is not a function.
+        Loops through all supported actions, validates and maps statements with
+        actions.
 
         Returns:
-            list: List of possible statements.
+            bool: True if statements are mapped successful.
         """
-        if not callable(func):
-            raise SystemExit("Expected callable function")
-        if statement_header is None:
-            statement_header = self.statement_header
-        lines = func.__doc__.split("\n")
-        return Parser.parse(tuple(lines), [statement_header], test=test)
+
+        Log.debug("Preparing to scan %d actions" % len(cls.__actions))
+        for action in cls.__actions:
+            if not callable(action):
+                raise SystemExit("Expected action to be callable")
+            Log.debug("Scanning action: %s" % action.parse_description())
+            for line in action.parse_statements():
+                exp = compile(line.strip(), IGNORECASE|UNICODE)
+                cls.statements.update({exp: action})
+                Log.debug("Updating known patterns: %s" % exp.pattern)
+        if len(cls.statements) < len(cls.__actions):
+            raise SystemExit("Unable to map statements to action")
+        cls.ready = True
+        Log.debug("All statements are scanned")
+
+    @classmethod
+    def find_statement(cls, stmt):
+        """Lookup a statement.
+
+        Returns:
+            mixt: Statement if found, otherwise None.
+        """
+
+        return cls.statements.get(stmt)
+
+    @classmethod
+    def has_statement(cls, stmt):
+        """Check whetever a statement exists.
+
+        Returns:
+            bool: True if statement is found.
+        """
+
+        return cls.find_statement(stmt) is not None
+
+    @classmethod
+    def get_statements(cls):
+        """Statetements getter.
+
+        Returns:
+            iterator: A key-value itertator of all statements.
+        """
+
+        return cls.statements.iteritems()
+
+    @classmethod
+    def get_actions(cls):
+        """Actions getter.
+
+        Returns:
+            list: All supported actions.
+        """
+
+        return cls.__actions

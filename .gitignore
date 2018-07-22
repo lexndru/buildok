@@ -8,3 +8,4 @@ buildok_app
 .notes
 /buildok.egg-info
 /dist
+/dummy
