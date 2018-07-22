@@ -20,6 +20,7 @@
 
 from buildok.reader import Reader
 from buildok.matcher import Matcher
+from buildok.placeholder import Placeholder
 
 from buildok.structures.instruction import Instruction
 from buildok.structures.guide import Guide
@@ -145,6 +146,8 @@ class ReadmeReader(Reader):
         scan = Instruction.PATTERN.match(line)
         if scan is not None:
             step = scan.group("step")
+            if Placeholder.scan_string(step):
+                step = Placeholder.parse_string(step)
             punct = scan.group("punct")
             self.last_step = Instruction(self.get_line_number(), step, punct)
             if self.last_topic is None:
@@ -179,10 +182,14 @@ class ReadmeReader(Reader):
             raise self.UnclosedPayloadError(self.last_step)
         try:
             a, z = borders
-            self.last_step.set_payload(content[1+a:z])
+            payload = content[1+a:z]
+            if Placeholder.scan_list(payload):
+                payload = Placeholder.parse_list(payload)
+            self.last_step.set_payload(payload)
             self.skip_line(lines=z+1)
             self.last_step = None
         except Exception as e:
+            Log.error(str(e))
             raise self.BadFormatError(self.last_step)
         return self
 
@@ -200,6 +207,8 @@ class ReadmeReader(Reader):
         line_step = Instruction.PATTERN.match(line)
         if line_step is not None:
             step = line_step.group("step")
+            if Placeholder.scan_string(step):
+                step = Placeholder.parse_string(step)
             topic = self.last_guide.get_topic_by_title(self.recent_topic)
             if topic.has_step(step):
                 if Matcher.is_valid(step):

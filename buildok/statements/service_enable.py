@@ -26,11 +26,11 @@ from buildok.action import Action
 from buildok.util.log import Log
 
 
-class StatusService(Action):
-    r"""Get status of service.
+class EnableService(Action):
+    r"""Enable service at boot time.
 
     Args:
-        srv (str): Service name to retrieve status.
+        srv (str): Service name to enable.
 
     Retuns:
         str: Output as string.
@@ -39,28 +39,33 @@ class StatusService(Action):
         OSError: If an invalid `srv` is provided.
 
     Accepted statements:
-        ^get status (?:for|of) service `(?P<srv>.+)`$
-        ^Print `(?P<srv>.+)` service status$
+        ^enable service `(?P<srv>.+)`$
 
     Sample (input):
-        - Get status of service `urandom`.
+        - Enable service `urandom`.
 
     Expected:
-        Service 'urandom' => active
+        Service 'urandom' => enabled
     """
 
-    os_distro = {
-        ("arch", "centos", "coreos", "debian", "fedora", "gentoo", "mageia", "mint", "opensuse", "rhel", "suse", "ubuntu"): "systemctl status {service}.service"
+    os_distro_trigger = {
+        ("arch", "centos", "coreos", "debian", "fedora", "gentoo", "mageia", "mint", "opensuse", "rhel", "suse", "ubuntu"): ("systemctl enable {service}.service", "systemctl is-enabled {service}.service")
     }
 
     def run(self, srv=None, *args, **kwargs):
-        cmd = StatusService.check_systemd()
+        cmd = EnableService.check_systemd()
         if cmd is None:
             return self.fail("Unsupported OS: %s" % self.env.os_name)
         try:
-            service_cmd = cmd.format(service=srv)
-            Log.debug("Service OS (%s) status: %s ..." % (self.env.os_name, service_cmd))
-            ok, status = StatusService.get_status(cmd_split(service_cmd))
+            toggle_cmd, check_cmd = cmd
+            service_cmd = toggle_cmd.format(service=srv)
+            Log.debug("Service OS (%s) boot: %s ..." % (self.env.os_name, service_cmd))
+            service_output = Popen(cmd_split(service_cmd))
+            while service_output.poll() is None:
+                sleep(0.5)
+            if 0 != service_output.returncode:
+                return self.fail(u"Service '%s' => failed to enable" % srv)
+            ok, status = EnableService.get_status(cmd_split(check_cmd.format(service=srv)))
             output = u"Service '%s' => %s" % (srv, status)
             if ok:
                 self.success(output)
@@ -77,32 +82,22 @@ class StatusService(Action):
         stdout, _ = proc.communicate()
         for line in stdout.split("\n"):
             # https://www.freedesktop.org/software/systemd/man/systemctl.html
-            if not line.lower().strip().startswith("active: "):
-                continue
-            if "active (running)" in line.lower():
-                return True, "active"
-            elif "deactivating" in line.lower():
-                return False, "deactivating"
-            elif "activating" in line.lower():
-                return True, "activating"
-            elif "failed" in line.lower():
-                return False, "failed"
-            elif "inactive" in line.lower():
-                return False, "inactive"
-        return False, "n/a"
+            if line.lower().strip().startswith("enabled"):
+                return True, "enabled"
+        return False, "disabled"
 
     @classmethod
     def check_systemd(cls):
-        for oses, cmd in cls.os_distro.iteritems():
+        for oses, cmds in cls.os_distro_trigger.iteritems():
             if cls.env.os_name in oses:
-                return cmd
+                return cmds
         return None
 
     @classmethod
     def convert_shell(cls, srv=None, *args, **kwargs):
         if srv is None:
             return "echo Invalid script or missing service"
-        cmd = cls.check_systemd()
+        cmd, _ = cls.check_systemd()
         if cmd is not None:
             return cmd.format(service=srv)
         return "echo Unable to get status of service %s" % srv

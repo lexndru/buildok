@@ -41,7 +41,7 @@ class ChangeMod(Action):
         ^change permissions to `(?P<mode>.+)`$
         ^change permissions to `(?P<mode>.+)` for `(?P<path>.+)`$
         ^change permissions `(?P<mode>.+)` for `(?P<path>.+)`$
-        ^set permissions to `(?P<mode>.+)` for `(?P<path>.+)`$
+        ^set permissions (?:to )?`(?P<mode>.+)` (?:for|to|on) `(?P<path>.+)`$
 
     Sample input:
         - Run `touch /tmp/buildok_test.txt`.

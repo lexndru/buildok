@@ -28,6 +28,7 @@ from buildok.statement import Statement
 from buildok.script import Script
 from buildok.report import Report
 from buildok.action import Action
+from buildok.placeholder import Placeholder
 
 from buildok.util.console import Console
 from buildok.util.shell import Shell
@@ -72,6 +73,9 @@ def main(error=None):
 
     # Self-analyze buildok and continue or crash
     self_analyze(None, Statement) or crash("Run an analyze and correct problems")
+
+    # Setup placeholders
+    Placeholder.config(args.placeholder)
 
     # Attach system environment to all actions
     Action.set_env(Sysenv)

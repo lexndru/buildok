@@ -80,6 +80,7 @@ class Instruction(object):
         Returns:
             bool: Instruction run status.
         """
+
         return self.status
 
     def get_output(self):
@@ -88,6 +89,7 @@ class Instruction(object):
         Returns:
             str: Instruction run output.
         """
+
         return self.output
 
     def set_payload(self, payload):
@@ -101,6 +103,7 @@ class Instruction(object):
         Raises:
             TypeError: If unsupported data is provided.
         """
+
         if isinstance(payload, (tuple, list, set, frozenset)):
             self.payload = "\n".join(payload)
         elif isinstance(payload, (str, unicode)):
@@ -114,6 +117,7 @@ class Instruction(object):
         Returns:
             str: Instruction payload.
         """
+
         return self.payload
 
     def set_position(self, value):
@@ -125,6 +129,7 @@ class Instruction(object):
         Raises:
             TypeError: If value is not an unsigned interger.
         """
+
         if not isinstance(value, int) or value < 0:
             raise TypeError("Position must be an unsigned integer")
         self.order = value
@@ -135,6 +140,7 @@ class Instruction(object):
         Returns:
             int: Instruction order.
         """
+
         return self.order
 
     def set_step(self, value):
@@ -146,6 +152,7 @@ class Instruction(object):
         Raises:
             TypeError: If value is not a non-empty string.
         """
+
         if not isinstance(value, (str, unicode)) or len(value) == 0:
             raise TypeError("Step must be non-empty string")
         self.step = value
@@ -156,6 +163,7 @@ class Instruction(object):
         Returns:
             str: Instruction text step string.
         """
+
         return self.step
 
     def set_description(self, value):
@@ -167,6 +175,7 @@ class Instruction(object):
         Raises:
             TypeError: If value is not a non-empty string.
         """
+
         if not isinstance(value, (str, unicode)) or len(value) == 0:
             raise TypeError("Description must be non-empty string")
         self.description = value
@@ -177,6 +186,7 @@ class Instruction(object):
         Returns:
             str: Instruction description string.
         """
+
         return self.description
 
     def set_statement(self, value):
@@ -188,6 +198,7 @@ class Instruction(object):
         Raises:
             TypeError: If value is not callable.
         """
+
         if not callable(value):
             raise TypeError("Step handler must be callable")
         self.action = value
@@ -198,6 +209,7 @@ class Instruction(object):
         Returns:
             callable: Instruction step handler.
         """
+
         return self.action
 
     def set_arguments(self, value):
@@ -209,6 +221,7 @@ class Instruction(object):
         Raises:
             TypeError: If value is not tuple.
         """
+
         if not isinstance(value, tuple):
             raise TypeError("Step arguments must be tuple")
         self.args = value
@@ -219,6 +232,7 @@ class Instruction(object):
         Returns:
             tuple: Instruction step arguments.
         """
+
         return self.args
 
     def set_kwarguments(self, value):
@@ -230,6 +244,7 @@ class Instruction(object):
         Raises:
             TypeError: If value is not dict.
         """
+
         if not isinstance(value, dict):
             raise TypeError("Step arguments must be dict")
         self.kwargs = value
@@ -240,6 +255,7 @@ class Instruction(object):
         Returns:
             dict: Instruction step keyword arguments.
         """
+
         return self.kwargs
 
     def set_punctuation(self, value):
@@ -251,6 +267,7 @@ class Instruction(object):
         Raises:
             TypeError: If value is not a valid punctuation.
         """
+
         if value not in self.RunType.__dict__.values():
             raise TypeError("Unsupported step punctuation")
         self.punct = value
@@ -261,6 +278,7 @@ class Instruction(object):
         Returns:
             Punctuation: Instruction punctuation flag.
         """
+
         return self.punct
 
     def run(self):
@@ -272,6 +290,7 @@ class Instruction(object):
         Returns:
             tuple: (Boolean) True if succeeds, otherwise False; (String) output.
         """
+
         if not callable(self.action):
             raise TypeError("Action is not set")
         handler = self.action()

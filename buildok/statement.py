@@ -42,6 +42,14 @@ from buildok.statements.install_npm import NpmInstallPackage
 from buildok.statements.install import InstallPackage
 from buildok.statements.uninstall import UninstallPackage
 from buildok.statements.reinstall import ReinstallPackage
+from buildok.statements.service_enable import EnableService
+from buildok.statements.service_disable import DisableService
+from buildok.statements.service_status import StatusService
+from buildok.statements.service_start import StartService
+from buildok.statements.service_stop import StopService
+from buildok.statements.service_restart import RestartService
+from buildok.statements.service_reload import ReloadService
+from buildok.statements.listdir import ListDir
 from buildok.statements.invoke import InvokeTopic
 from buildok.statements.noop import Noop
 
@@ -82,6 +90,14 @@ class Statement(object):
         ReinstallPackage, # Reinstall package software.
         InvokeTopic,      # Invoke new topic from guide.
         Noop,             # No operation; nothing to do.
+        EnableService,    # Enable service at boot time.
+        DisableService,   # Disable service at boot time.
+        StatusService,    # Get status of service.
+        StartService,     # Start new service.
+        StopService,      # Stop running service.
+        RestartService,   # Restart running service.
+        ReloadService,    # Reload service configuration.
+        ListDir,          # List files and directories from directory.
     }
 
     statements = {}

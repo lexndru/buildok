@@ -59,6 +59,7 @@ class Topic(object):
         Raises:
             TypeError: If value is not an unsigned interger.
         """
+
         if not isinstance(value, int) or value < 0:
             raise TypeError("Position must be an unsigned integer")
         self.order = value
@@ -69,6 +70,7 @@ class Topic(object):
         Returns:
             int: Topic order.
         """
+
         return self.order
 
     def set_title(self, value):
@@ -80,6 +82,7 @@ class Topic(object):
         Raises:
             TypeError: If value is not a string.
         """
+
         if not isinstance(value, (str, unicode)):
             raise TypeError("Unsupported title")
         self.title = value
@@ -90,6 +93,7 @@ class Topic(object):
         Returns:
             str: Title of topic.
         """
+
         return self.title
 
     def has_step(self, step):
@@ -101,6 +105,7 @@ class Topic(object):
         Returns:
             bool: True if step exists, otherwise False.
         """
+
         for s in self.steps:
             if s.get_step().lower() == step.lower():
                 return True
@@ -112,6 +117,7 @@ class Topic(object):
         Args:
             step (str): Step string managed by current topic.
         """
+
         if self.steps is None:
             self.steps = []
         self.steps.append(step)
@@ -125,6 +131,7 @@ class Topic(object):
         Raises:
             TypeError: If value is not a valid list.
         """
+
         if not isinstance(value, list):
             raise TypeError("Unsupported instructions list")
         self.steps = value
@@ -135,6 +142,7 @@ class Topic(object):
         Returns:
             list: List of instructions.
         """
+
         return self.steps
 
     @classmethod
@@ -144,6 +152,7 @@ class Topic(object):
         Returns:
             list: List of stored topics.
         """
+
         return cls.__topics
 
     @classmethod
@@ -161,6 +170,7 @@ class Topic(object):
             ValueError: If project topic is not a string.
             Exception:  If project topic exceeds MAX_TOPIC_LIMIT.
         """
+
         if not isinstance(topic_pattern, (str, unicode)):
             raise ValueError("Project topic pattern must be string")
         cls.TOPIC_PATTERN = topic_pattern
@@ -179,6 +189,7 @@ class Topic(object):
             ValueError: If project topic is not a string.
             Exception:  If project topic exceeds MAX_TOPIC_LIMIT.
         """
+
         if not isinstance(project_topic, (str, unicode)):
             raise ValueError("Project topic must be string")
         if len(project_topic) > cls.TOPIC_MXLIMIT:
@@ -195,6 +206,7 @@ class Topic(object):
         Returns:
             Topic: class instance.
         """
+
         if cls.TOPIC_PATTERN is None:
             cls.TOPIC_PATTERN = default
         cls.PATTERN = re.compile(cls.TOPIC_PATTERN, re.I)

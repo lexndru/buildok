@@ -34,7 +34,7 @@ class Touch(Action):
         OSError: If an invalid `filepath` is provided.
 
     Accepted statements:
-        ^create file `(?P<filepath>[\w\.]+)`$
+        ^create(?: new)? file `(?P<filepath>[\w\.]+)`$
 
     Sample input:
         - Create file `/tmp/buildok.txt`.

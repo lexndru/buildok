@@ -20,7 +20,7 @@
 
 from __future__ import print_function
 
-from os import environ, listdir
+from os import environ, listdir, path, makedirs
 from platform import system
 
 from buildok import __build__
@@ -41,6 +41,24 @@ class Sysenv(object):
     os_name = ""
     os_version = ""
     shell_args = None
+
+    # policy_path = "/var/opt/buildok"
+    # policy_name = ".policy"
+    #
+    # @classmethod
+    # def install_policy(cls, policy):
+    #     try:
+    #         policy_data = None
+    #         with open(policy, "r") as fd:
+    #             policy_data = fd.read()
+    #         if policy_data is None:
+    #             raise SystemExit("Invalid policy: not installed")
+    #         if not path.exists(cls.policy_path):
+    #             makedirs(cls.policy_path)
+    #         with open(path.join(cls.policy_path, cls.policy_name), "w") as fd:
+    #             fd.write(policy_data)
+    #     except Exception as e:
+    #         raise SystemExit("Unable to install policy: %s" % str(e))
 
     @classmethod
     def print_disclaimer(cls):

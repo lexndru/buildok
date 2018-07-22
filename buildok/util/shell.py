@@ -107,7 +107,7 @@ class Shell(object):
             "help": "set path to configuration file"
         },
         (None, "--placeholder"): {
-            "action": "store",
+            "action": "append",
             "dest": "placeholder",
             "help": "set value to replace placeholder"
         },

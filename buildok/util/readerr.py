@@ -29,4 +29,4 @@ class ReadError(Exception):
 
     def __init__(self, err):
         step = err.get_step() if err is not None else "n/a"
-        super(self.__class__, self).__init__(error % unicode(step))
+        super(self.__class__, self).__init__(self.error % unicode(step))

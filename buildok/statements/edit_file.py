@@ -50,7 +50,7 @@ class EditFile(Action):
     def run(self, filepath=None, *args, **kwargs):
         lines = 0
         try:
-            with open(filepath, "w") as file_:
+            with open(filepath, "a") as file_:
                 file_.write(self.payload)
                 lines = len(self.payload.splitlines())
             self.success("Changed %d line(s) of content => %s" % (lines, filepath))
@@ -60,6 +60,6 @@ class EditFile(Action):
     @classmethod
     def convert_shell(cls, filepath=None, *args, **kwargs):
         if filepath is None:
-            return "echo cannot edit file because of an invalid filepath"
+            return "echo Cannot edit file because of an invalid filepath"
         payload = kwargs.get("payload", "n/a")
-        return "cat <<EOF > %s\n%s\nEOF" % (filepath, payload)
+        return "cat <<EOF >> %s\n%s\nEOF" % (filepath, payload)
