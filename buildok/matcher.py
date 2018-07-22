@@ -37,6 +37,7 @@ class Matcher(object):
         Returns:
             bool: True if statements have support for step.
         """
+
         step = text_step.strip()
         if len(step) == 0:
             return False
@@ -55,6 +56,7 @@ class Matcher(object):
         Returns:
             bool: True if all steps have been paired successfully.
         """
+
         return all([cls.pair_one(i) for i in instructions])
 
     @classmethod
@@ -67,6 +69,7 @@ class Matcher(object):
         Returns:
             bool: True if instruction has a pair whitin statements.
         """
+
         for exp, fun in Statement.get_statements():
             args = exp.match(instruction.get_step())
             if args is not None:

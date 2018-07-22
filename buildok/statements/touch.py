@@ -37,7 +37,7 @@ class Touch(Action):
         ^create file `(?P<filepath>[\w\.]+)`$
 
     Sample input:
-        1) Create file `/tmp/buildok.txt`.
+        - Create file `/tmp/buildok.txt`.
 
     Expected:
         Created file => /tmp/buildok.txt

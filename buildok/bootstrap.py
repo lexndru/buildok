@@ -33,6 +33,7 @@ from buildok.util.console import Console
 from buildok.util.shell import Shell
 from buildok.util.analyze import self_analyze, analyze, crash
 from buildok.util.locker import lock, unlock
+from buildok.util.lookup import scan_lookup
 from buildok.util.sysenv import Sysenv
 from buildok.util.log import Log
 
@@ -60,6 +61,10 @@ def main(error=None):
 
     # Prepare all statements
     Statement.prepare()
+
+    # Lookup statement and example usage
+    if args.lookup is not None:
+        return scan_lookup(Statement, args.lookup)
 
     # Run analysis and exit
     if args.analyze:

@@ -39,7 +39,7 @@ class InvokeTopic(Action):
         ^follow steps from `(?P<topic>.+)`$
 
     Sample input:
-        1) Follow steps from `do something else`.
+        - Follow steps from `do something else`.
 
     Expected:
         Running new topic => do something else

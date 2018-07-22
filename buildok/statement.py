@@ -41,6 +41,7 @@ from buildok.statements.install_pip import PipInstallPackage
 from buildok.statements.install_npm import NpmInstallPackage
 from buildok.statements.install import InstallPackage
 from buildok.statements.uninstall import UninstallPackage
+from buildok.statements.reinstall import ReinstallPackage
 from buildok.statements.invoke import InvokeTopic
 from buildok.statements.noop import Noop
 
@@ -78,6 +79,7 @@ class Statement(object):
         NpmInstallPackage,# Install Node.js packages.
         InstallPackage,   # Install new package software.
         UninstallPackage, # Uninstall package software.
+        ReinstallPackage, # Reinstall package software.
         InvokeTopic,      # Invoke new topic from guide.
         Noop,             # No operation; nothing to do.
     }
@@ -96,7 +98,7 @@ class Statement(object):
             bool: True if statements are mapped successful.
         """
 
-        Log.info("Preparing to scan %d actions" % len(cls.__actions))
+        Log.debug("Preparing to scan %d actions" % len(cls.__actions))
         for action in cls.__actions:
             if not callable(action):
                 raise SystemExit("Expected action to be callable")
@@ -108,7 +110,7 @@ class Statement(object):
         if len(cls.statements) < len(cls.__actions):
             raise SystemExit("Unable to map statements to action")
         cls.ready = True
-        Log.info("All statements are scanned")
+        Log.debug("All statements are scanned")
 
     @classmethod
     def find_statement(cls, stmt):

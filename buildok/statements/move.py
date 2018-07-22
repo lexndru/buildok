@@ -42,9 +42,9 @@ class Move(Action):
         ^rename `(?P<src>.+)` to `(?P<dst>.+)`$
 
     Sample input:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder_move`.
-        3) Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
+        - Go to `/tmp`.
+        - Create folder `buildok_test_folder_move`.
+        - Rename `buildok_test_folder_move` to `buildok_test_folder_moved`.
 
     Expected:
         Moved buildok_test_folder_move => buildok_test_folder_moved

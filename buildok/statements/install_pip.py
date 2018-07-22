@@ -41,15 +41,24 @@ class PipInstallPackage(Action):
 
     Accepted statements:
         ^install python packages? `(?P<pkgs>.+)`$
+        ^install python dependencies(?: from `(?P<deps>.+)`)?$
 
     Sample (input):
-        1) Install Python package `buildok`.
+        - Install Python package `buildok`.
 
     Expected:
         Installed 1 Python package(s)
     """
 
-    def run(self, pkgs=None, *args, **kwargs):
+    def run(self, pkgs=None, deps=None, *args, **kwargs):
+        if deps is not None and pkgs is None:
+            try:
+                with open(deps, "r") as fd:
+                    pkgs = fd.read().replace("\n", " ")
+            except Exception as e:
+                return self.fail(str(e))
+        if pkgs is None:
+            return self.fail("Invalid packages argument")
         packages = pkgs.split()
         if len(packages) == 0:
             return self.fail("No Python packages to install...")

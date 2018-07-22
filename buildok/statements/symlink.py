@@ -42,8 +42,8 @@ class MakeSymlink(Action):
         ^make symlink `(?P<dst>.+)`$
 
     Sample input:
-        1) Run `touch buildok_test_symlink`.
-        2) Make symlink `buildok_test_symlink_ok` from `buildok_test_symlink`.
+        - Run `touch buildok_test_symlink`.
+        - Make symlink `buildok_test_symlink_ok` from `buildok_test_symlink`.
 
     Expected:
         Created symlink buildok_test_symlink => buildok_test_symlink_ok

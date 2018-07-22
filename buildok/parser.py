@@ -27,7 +27,7 @@ class Parser(object):
     """
 
     @classmethod
-    def lookahead(cls, ctx, header, start_line=-1):
+    def lookahead(cls, ctx, header, start_line=-1, first_only=True):
         """Context parser.
 
         Args:
@@ -38,6 +38,7 @@ class Parser(object):
         Returns:
             list: List of statements extracted from context.
         """
+
         if isinstance(ctx, (str, unicode)):
             ctx = ctx.splitlines()
         for idx, line in enumerate(ctx):
@@ -45,5 +46,7 @@ class Parser(object):
             if start_line > -1 and not text:
                 return ctx[start_line+1:idx]
             if text.lower().startswith(header):
+                if first_only and start_line > -1:
+                    continue
                 start_line = idx
         return []

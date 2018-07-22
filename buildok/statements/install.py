@@ -43,7 +43,7 @@ class InstallPackage(Action):
         ^install `(?P<pkgs>.+)`$
 
     Sample (input):
-        1) Install `vim curl`.
+        - Install `vim curl`.
 
     Expected:
         Installed 2 new packages

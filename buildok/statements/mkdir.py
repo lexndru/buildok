@@ -40,8 +40,8 @@ class MakeDir(Action):
         ^make new (?:folder|directory) `(?P<path>.+)`$
 
     Sample input:
-        1) Go to `/tmp`.
-        2) Create folder `buildok_test_folder`.
+        - Go to `/tmp`.
+        - Create folder `buildok_test_folder`.
 
     Expected:
         Created new directory => buildok_test_folder

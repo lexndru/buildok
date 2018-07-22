@@ -40,7 +40,7 @@ class ViewWeb(Action):
         ^open (?:link|url) `(?P<url>.+)`$
 
     Sample (input):
-        1) Open link `https://github.com/lexndru/buildok`.
+        - Open link `https://github.com/lexndru/buildok`.
 
     Expected:
         Opened URL in browser => https://github.com/lexndru/buildok

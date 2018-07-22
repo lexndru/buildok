@@ -37,7 +37,7 @@ class GitHubSearch(ViewWeb):
         ^lookup `(?P<search>.+)` on github$
 
     Sample (input):
-        1) Lookup `buildok` on GitHub.
+        - Lookup `buildok` on GitHub.
 
     Expected:
         Lookup results => https://github.com/search?q=buildok

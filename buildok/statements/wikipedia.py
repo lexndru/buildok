@@ -37,7 +37,7 @@ class WikipediaSearch(ViewWeb):
         ^wiki(?:pedia)? `(?P<search>.+)`$
 
     Sample (input):
-        1) Wikipedia `buildok`.
+        - Wikipedia `buildok`.
 
     Expected:
         Wikipedia results => https://wikipedia.org/wiki/buildok

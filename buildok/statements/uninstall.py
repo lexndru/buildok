@@ -37,7 +37,7 @@ class UninstallPackage(InstallPackage):
         ^uninstall `(?P<pkgs>.+)`$
 
     Sample (input):
-        1) Uninstall `vim curl`.
+        - Uninstall `vim curl`.
 
     Expected:
         Uninstalled 2 packages
@@ -46,11 +46,6 @@ class UninstallPackage(InstallPackage):
     os_packs = {
         ("alpine",):            "apk del {packages}",
         ("debian", "ubuntu"):   "apt-get purge {packages}",
-        # ("centos", "fedora"):   "yum erase {packages}",
-        # ("fedora",):            "dnf remove {packages}",
-        # ("slackware",):         "slackpkg remove {packages}",
-        # ("arch",):              "pacman -R {packages}",
-        # ("gentoo",):            "emerge -c {packages}",
     }
 
     def run(self, pkgs=None, *args, **kwargs):
@@ -58,12 +53,12 @@ class UninstallPackage(InstallPackage):
         if len(packages) == 0:
             return self.fail("No packages to uninstall...")
         try:
-            cmd = InstallPackage.check_install()
+            cmd = UninstallPackage.check_install()
             if cmd is None:
                 return self.fail("Unsupported OS: %s" % self.env.os_name)
             uninstalled_pkgs = self.install_packages(cmd, packages)
             if uninstalled_pkgs > 0:
-                self.success("Uninstalled %d packages" % installed_pkgs)
+                self.success("Uninstalled %d packages" % uninstalled_pkgs)
             else:
                 self.fail("Failed to uninstall packages...")
         except Exception as e:
@@ -73,7 +68,7 @@ class UninstallPackage(InstallPackage):
     def convert_shell(cls, pkgs=None, *args, **kwargs):
         if pkgs is None:
             return "echo Nothing to uninstall"
-        cmd = InstallPackage.check_install()
+        cmd = UninstallPackage.check_install()
         if cmd is not None:
             return cmd.format(packages=pkgs)
         return "echo Unable to uninstall packages: %s" % pkgs

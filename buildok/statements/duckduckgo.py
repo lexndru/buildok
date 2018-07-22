@@ -37,7 +37,7 @@ class DuckDuckGoSearch(ViewWeb):
         ^lookup `(?P<search>.+)` online$
 
     Sample (input):
-        1) Lookup `buildok` online.
+        - Lookup `buildok` online.
 
     Expected:
         Lookup results => https://duckduckgo.com/?q=buildok

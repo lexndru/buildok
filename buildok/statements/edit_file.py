@@ -37,10 +37,10 @@ class EditFile(Action):
         ^add the following content to file `(?P<filepath>[\w\.]+)`$
 
     Sample input:
-        1) Go to `/tmp`;
-        1) Add the following content to file `buildok.txt`:
+        - Go to `/tmp`;
+        - Add the following content to file `buildok.txt`:
         ```
-        Sample
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit...
         ```
 
     Expected:

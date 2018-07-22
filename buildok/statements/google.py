@@ -37,7 +37,7 @@ class GoogleSearch(ViewWeb):
         ^google (?:for )?`(?P<search>.+)`$
 
     Sample (input):
-        1) Google `buildok`.
+        - Google `buildok`.
 
     Expected:
         Google search results => https://google.com/?q=buildok

@@ -52,8 +52,8 @@ class ChangeOwner(Action):
         ^set owner and group `(?P<owner>.+):(?P<group>.+)` for `(?P<path>.+)`$
 
     Sample input:
-        1) Run `touch /tmp/buildok_test.txt`.
-        2) Change owner to `nobody` on `/tmp/buildok_test.txt`.
+        - Run `touch /tmp/buildok_test.txt`.
+        - Change owner to `nobody` on `/tmp/buildok_test.txt`.
 
     Expected:
         Changed owner nobody => /tmp/buildok_test.txt

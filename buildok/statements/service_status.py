@@ -24,48 +24,60 @@ from subprocess import check_output, CalledProcessError, STDOUT
 from buildok.action import Action
 
 
-class ShellExec(Action):
-    r"""Run a command in shell.
+class StatusService(Action):
+    r"""Get status of service.
 
     Args:
-        cmd (str): Raw shell command.
+        srv (str): Service name to retrieve status.
 
     Retuns:
         str: Output as string.
 
     Raises:
-        OSError: If an invalid `cmd` is provided.
+        OSError: If an invalid `srv` is provided.
 
     Accepted statements:
-        ^run `(?P<cmd>.+)`$
+        ^get status (?:for|of) service `(?P<srv>.+)`$
+        ^Print `(?P<srv>.+)` service status$
 
     Sample input:
-        - Run `echo hello friend how are you`.
+        - Get status of service `urandom`.
 
     Expected:
-        Output => hello friend how are you
+        Service 'urandom' => active
     """
 
-    def run(self, cmd=None, *args, **kwargs):
-        safe_cmd = cmd_split(cmd)
-        output_args = {"stderr": STDOUT}
-        if self.env.shell_args is not None:
-            if self.env.shell_args.unsafe_shell:
-                output_args.update({"shell": True})
-            else:
-                cmd = safe_cmd
+    os_distro = {
+        ("arch", "centos", "coreos", "debian", "fedora", "gentoo", "mageia", "mint", "opensuse", "rhel", "suse", "ubuntu"): "systemctl status {service}"
+    }
+
+    def run(self, srv=None, *args, **kwargs):
+        cmd = StatusService.check_systemd()
+        if cmd is None:
+            return self.fail("Unsupported OS: %s" % self.env.os_name)
         try:
-            output = check_output(cmd, **output_args)
+            output = check_output(cmd.format(service=srv), stderr=STDOUT)
+            print output.splitlines()
             if output is None:
                 output = "n/a"
-            self.success(u"Output => %s" % output.decode('utf-8').strip())
+            self.success(u"Service '%s' => %s" % (srv, "active"))
         except CalledProcessError as e:
             self.fail(e.output)
         except Exception as e:
             self.fail(str(e))
 
     @classmethod
-    def convert_shell(cls, cmd=None, *args, **kwargs):
-        if cmd is None:
-            return "echo Invalid script or missing cmd"
-        return cmd
+    def check_systemd(cls):
+        for oses, cmd in cls.os_distro.iteritems():
+            if cls.env.os_name in oses:
+                return cmd
+        return None
+
+    @classmethod
+    def convert_shell(cls, srv=None, *args, **kwargs):
+        if srv is None:
+            return "echo Invalid script or missing service"
+        cmd = StatusService.check_systemd()
+        if cmd is not None:
+            return cmd.format(service=srv)
+        return "echo Unable to get status of service %s" % srv

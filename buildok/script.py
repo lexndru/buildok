@@ -192,6 +192,20 @@ class Script(object):
         if guide is None:
             Log.fatal("Guide has no such topic")
 
+        # Pair each step with appropriate statement
+        self.guide_topics = guide.get_topics()
+        if self.args.strict:
+            if not all([Matcher.pair_all(t.get_steps()) for t in self.guide_topics]):
+                Report.set_status("Halted")
+                Report.set_error("Unsupported steps")
+                Log.fatal("Cannot continue because of unsupported steps")
+        else:
+            for t in self.guide_topics:
+                for step in t.get_steps():
+                    pair = Matcher.pair_one(step)
+                    if not pair:
+                        self.guide_topics.remove(t)
+
         # Scan topics
         topic, steps = None, []
         topics = [t.get_title() for t in guide.get_topics()]
@@ -213,11 +227,6 @@ class Script(object):
         # Display warnings
         if self.args.unsafe_shell:
             print(WARNING_UNSAFE_SHELL)
-
-        # Pair each step with appropriate statement
-        self.guide_topics = guide.get_topics()
-        if not all([Matcher.pair_all(t.get_steps()) for t in self.guide_topics]):
-            Log.fatal("Cannot continue because of unsupported steps")
 
         # Save topic and topic's steps
         self.topic = self.get_user_input()

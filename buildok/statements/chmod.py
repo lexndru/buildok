@@ -44,8 +44,8 @@ class ChangeMod(Action):
         ^set permissions to `(?P<mode>.+)` for `(?P<path>.+)`$
 
     Sample input:
-        1) Run `touch /tmp/buildok_test.txt`.
-        2) Set permissions to `400` for `/tmp/buildok_test.txt`.
+        - Run `touch /tmp/buildok_test.txt`.
+        - Set permissions to `400` for `/tmp/buildok_test.txt`.
 
     Expected:
         Changed permissions 400 => /tmp/buildok_test.txt

@@ -20,14 +20,20 @@
 
 from __future__ import print_function
 
+from buildok.action import Action
 from buildok.parser import Parser
 from buildok.statement import Statement
+from buildok.util.sysenv import Sysenv
+from buildok.structures.instruction import Instruction
 
 
 def main():
 
     # Load statemets
     Statement.prepare()
+
+    # Attach sysenv to actions
+    Action.set_env(Sysenv)
 
     # Holder
     not_testing = []
@@ -53,11 +59,18 @@ def main():
 
         for line in data_in:
             print(" " * 10, line.strip())
+
+            scan = Instruction.PATTERN.match(line.strip())
+            if scan is None:
+                continue
+            step = Instruction(0, scan.group("step"), scan.group("punct"))
+
             for exp, handler in Statement.get_statements():
-                args = exp.match(line.strip())
+                args = exp.match(step.get_step())
                 if args is not None:
-                    output = handler.run(**args.groupdict())
-                    print(output)
+                    fun = handler()
+                    fun.run(**args.groupdict())
+                    print(fun.get_output())
                     break
 
         for line in data_out:

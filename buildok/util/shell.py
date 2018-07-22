@@ -51,6 +51,11 @@ class Shell(object):
             "dest": "analyze",
             "help": "scan all known statements"
         },
+        ("-l", "--lookup"): {
+            "action": "store",
+            "dest": "lookup",
+            "help": "analyze and lookup statement with example"
+        },
         ("-t", "--topic"): {
             "action": "store",
             "dest": "topic",
@@ -75,6 +80,11 @@ class Shell(object):
             "action": "store_true",
             "dest": "fake_run",
             "help": "read and parse guide without actually running on machine"
+        },
+        (None, "--strict"): {
+            "action": "store_true",
+            "dest": "strict",
+            "help": "don't ignore unsupported steps from guide"
         },
         (None, "--unsafe-shell"): {
             "action": "store_true",
@@ -110,6 +120,7 @@ class Shell(object):
         Return:
             Namespace: Namespace of parser arguments from shell.
         """
+
         for keys, vals in cls.args.iteritems():
             short, long_ = keys
             if short is None:

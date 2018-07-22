@@ -40,7 +40,7 @@ class ChangeDir(Action):
         ^change (?:dir|directory|folder) to `(?P<path>.+)`$
 
     Sample input:
-        1) Go to `/tmp`.
+        - Go to `/tmp`.
 
     Expected:
         Changed directory => /tmp

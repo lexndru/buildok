@@ -44,7 +44,7 @@ class KillProcess(Action):
         ^(?:kill|stop) pid `(?P<pid>.+)`$
 
     Sample (input):
-        1) Stop process `someProcessName`.
+        - Stop process `someProcessName`.
 
     Expected:
         Terminated process PID => 9999

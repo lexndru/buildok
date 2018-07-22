@@ -18,20 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from subprocess import Popen
-from time import sleep
-from shlex import split as cmd_split
-
-from buildok.action import Action
-
-from buildok.util.log import Log
+from buildok.statements.install import InstallPackage
 
 
-class NpmInstallPackage(Action):
-    r"""Install software package(s) with Node.js's package manager (npm).
+class ReinstallPackage(InstallPackage):
+    r"""Reinstall software package(s).
 
     Args:
-        pkgs (str): Packages to install.
+        pkgs (str): Packages to reinstall.
 
     Retuns:
         str: Human readable descriptor message or error.
@@ -40,43 +34,41 @@ class NpmInstallPackage(Action):
         Exception: If any of `pkgs` are not found.
 
     Accepted statements:
-        ^install node\.?js packages? `(?P<pkgs>.+)`$
+        ^reinstall `(?P<pkgs>.+)`$
 
     Sample (input):
-        - Install Node.js package `npm bower`.
+        - Reinstall `vim curl`.
 
     Expected:
-        Installed 2 Node.js package(s)
+        Reinstalled 2 packages
     """
+
+    os_packs = {
+        ("alpine",):            "apk fix {packages}",
+        ("debian", "ubuntu"):   "apt-get install --reinstall {packages}",
+    }
 
     def run(self, pkgs=None, *args, **kwargs):
         packages = pkgs.split()
         if len(packages) == 0:
-            return self.fail("No Node.js packages to install...")
+            return self.fail("No packages to reinstall...")
         try:
-            installed_pkgs = self.install_packages("npm install {packages}", packages)
-            if installed_pkgs > 0:
-                self.success("Installed %d Node.js package(s)" % installed_pkgs)
+            cmd = ReinstallPackage.check_install()
+            if cmd is None:
+                return self.fail("Unsupported OS: %s" % self.env.os_name)
+            reinstalled_pkgs = self.install_packages(cmd, packages)
+            if reinstalled_pkgs > 0:
+                self.success("Reinstalled %d packages" % reinstalled_pkgs)
             else:
-                self.fail("Failed to install Node.js packages...")
+                self.fail("Failed to reinstall packages...")
         except Exception as e:
             self.fail(str(e))
 
     @classmethod
     def convert_shell(cls, pkgs=None, *args, **kwargs):
         if pkgs is None:
-            return "echo Nothing to install with npm"
-        return "npm install %s" % pkgs
-
-    def install_packages(self, cmd, packages):
-        installed = 0
-        for pkg in packages:
-            install_cmd = cmd_split(cmd.format(packages=pkg))
-            install_output = Popen(install_cmd)
-            while install_output.poll() is None:
-                sleep(0.5)
-            output = install_output.returncode
-            Log.debug("Running (npm) %s ... %r" % (install_cmd, output == 0))
-            if 0 == output:
-                installed += 1
-        return installed
+            return "echo Nothing to reinstall"
+        cmd = ReinstallPackage.check_install()
+        if cmd is not None:
+            return cmd.format(packages=pkgs)
+        return "echo Unable to reinstall packages: %s" % pkgs

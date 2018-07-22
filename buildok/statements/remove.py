@@ -42,9 +42,9 @@ class Remove(Action):
         ^remove (?:file|folder|directory) `(?P<src>.+)`$
 
     Sample input:
-        1) Go to `/tmp`.
-        2) Run `touch buildok_test_tmp.txt`.
-        3) Remove file `buildok_test_tmp.txt`.
+        - Go to `/tmp`.
+        - Run `touch buildok_test_tmp.txt`.
+        - Remove file `buildok_test_tmp.txt`.
 
     Expected:
         Removed => buildok_test_tmp.txt

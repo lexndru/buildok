@@ -78,13 +78,13 @@ def analyze(statement, length=80):
 
     lines = scan_statements(statement)
     results = self_analyze(lines)
-    Log.info("Listing all statements...")
+    Log.debug("Listing all statements...")
     for action in statement.get_actions():
         try:
-            text = action.__doc__.splitlines()[0]
+            text = action.parse_description()
         except:
             text = "no description"
-        print("")
+        print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % ("-" * (length-4)))
         print(u"\033[90m|   |\033[0m \033[96m%-{}s\033[0m \033[90m|\033[0m".format(length-6) % text)
         print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % ("-" * (length-4)))
         for line in action.parse_statements():
@@ -95,7 +95,7 @@ def analyze(statement, length=80):
                 status = UnicodeIcon.VALID
                 line_text = u"\033[92m%-{}s\033[0m".format(length-6) % line.strip()
             print(u"\033[90m|\033[0m %s \033[90m|\033[0m %s \033[90m|\033[0m" % (status, line_text))
-        print("")
+    print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % ("-" * (length-4)))
     if not results:
         Log.error("Duplicated statements found!")
         for line, times in lines.iteritems():

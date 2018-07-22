@@ -184,10 +184,23 @@ class Action(object):
 
     @classmethod
     def parse_statements(cls):
-        """Docstring parser.
+        """Statements parser.
 
         Returns:
             list: List of statements extracted from action handler.
         """
 
-        return Parser.lookahead(unicode(cls.__doc__), cls.doc_header)
+        return cls.parse(cls.doc_header)
+
+    @classmethod
+    def parse(cls, string):
+        """Docstring parser.
+
+        Args:
+            string (str): Headline string to lookup after.
+
+        Returns:
+            list: List extracted from action handler.
+        """
+
+        return Parser.lookahead(unicode(cls.__doc__), string)

@@ -33,7 +33,7 @@ class Noop(Action):
         ^that's all folks$
 
     Sample input:
-        1) Nothing to do.
+        - Nothing to do.
 
     Expected:
         Noop

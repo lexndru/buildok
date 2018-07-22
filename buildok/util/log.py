@@ -53,4 +53,4 @@ class Log(object):
     @classmethod
     def fatal(cls, message):
         logging.critical(message)
-        raise SystemExit(message)
+        raise Exception(message)

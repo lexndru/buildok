@@ -45,8 +45,8 @@ class Copy(Action):
         ^copy `(?P<src>.+)` to `(?P<dst>.+)`$
 
     Sample input:
-        1) Run `touch /tmp/buildok_test_copy.txt`.
-        2) Copy `/tmp/buildok_test_copy.txt` to `/tmp/buildok_test_copy2.txt`.
+        - Run `touch /tmp/buildok_test_copy.txt`.
+        - Copy `/tmp/buildok_test_copy.txt` to `/tmp/buildok_test_copy2.txt`.
 
     Expected:
         Copied => 1 file(s) 0 dir(s)
