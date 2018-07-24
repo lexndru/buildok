@@ -46,7 +46,7 @@ class StopService(StatusService):
         - Stop service `urandom`.
 
     Expected:
-        Service 'urandom' => inactive
+        Service 'urandom' => stopped
     """
 
     os_distro = {
@@ -71,13 +71,7 @@ class StopService(StatusService):
                 sleep(0.5)
             if 0 != service_output.returncode:
                 return self.fail(u"Service '%s' => failed to stop" % srv)
-            check_cmd = StatusService.check_systemd()
-            ok, status = StatusService.get_status(cmd_split(check_cmd))
-            output = u"Service '%s' => %s" % (srv, status)
-            if status == "inactive":
-                self.success(output)
-            else:
-                self.fail(output)
+            self.success(u"Service '%s' => stopped" % srv)
         except CalledProcessError as e:
             self.fail(e.output)
         except Exception as e:

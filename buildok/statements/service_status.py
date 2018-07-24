@@ -66,7 +66,7 @@ class StatusService(Action):
             service_cmd = cmd.format(service=srv)
             log_status = (self.env.os_name, service_cmd)
             Log.debug("Service OS (%s) status: %s ..." % log_status)
-            ok, status = StatusService.get_status(cmd_split(service_cmd))
+            ok, status = StatusService.get_service_status(service_cmd)
             output = u"Service '%s' => %s" % (srv, status)
             if ok:
                 self.success(output)
@@ -78,8 +78,8 @@ class StatusService(Action):
             self.fail(str(e))
 
     @classmethod
-    def get_status(cls, service_cmd):
-        proc = Popen(service_cmd, stdout=PIPE)
+    def get_service_status(cls, service_cmd):
+        proc = Popen(cmd_split(service_cmd), stdout=PIPE)
         stdout, _ = proc.communicate()
         for line in stdout.split("\n"):
             # https://www.freedesktop.org/software/systemd/man/systemctl.html

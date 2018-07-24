@@ -46,7 +46,7 @@ class DisableService(EnableService):
         - Disable service `urandom`.
 
     Expected:
-        Service 'urandom' => disable
+        Service 'urandom' => disabled
     """
 
     os_distro_trigger = {
@@ -73,13 +73,7 @@ class DisableService(EnableService):
                 sleep(0.5)
             if 0 != service_output.returncode:
                 return self.fail(u"Service '%s' => failed to disable" % srv)
-            srv_cmd = cmd_split(check_cmd.format(service=srv))
-            ok, status = DisableService.get_status(srv_cmd)
-            output = u"Service '%s' => %s" % (srv, status)
-            if not ok:
-                self.success(output)
-            else:
-                self.fail(output)
+            self.success(u"Service '%s' => disabled" % srv)
         except CalledProcessError as e:
             self.fail(e.output)
         except Exception as e:

@@ -46,7 +46,7 @@ class StartService(StatusService):
         - Start service `urandom`.
 
     Expected:
-        Service 'urandom' => active
+        Service 'urandom' => started
     """
 
     os_distro = {
@@ -71,13 +71,7 @@ class StartService(StatusService):
                 sleep(0.5)
             if 0 != service_output.returncode:
                 return self.fail(u"Service '%s' => failed to start" % srv)
-            check_cmd = StatusService.check_systemd()
-            ok, status = StatusService.get_status(cmd_split(check_cmd))
-            output = u"Service '%s' => %s" % (srv, status)
-            if ok:
-                self.success(output)
-            else:
-                self.fail(output)
+            self.success(u"Service '%s' => started" % srv)
         except CalledProcessError as e:
             self.fail(e.output)
         except Exception as e:
