@@ -34,7 +34,7 @@ def traceback_error():
         _, _, tb = sys.exc_info()
         for line in traceback.extract_tb(tb):
             print(" ".join([str(e) for e in line]))
-    except:
+    except Exception:
         pass
 
 
@@ -124,7 +124,8 @@ class Console(object):
         cls.stop_time = timeit.default_timer()
         if cls.verbose and message is not None:
             print("\033[92m[Build] %s\033[0m" % message)
-        print("\033[92m\033[1m[Build] OK (runtime %ss)\033[0m" % (cls.stop_time - cls.start_time))
+        seconds = cls.stop_time - cls.start_time
+        print("\033[92m\033[1m[Build] OK (runtime %ss)\033[0m" % seconds)
 
     @classmethod
     def warn(cls, message):

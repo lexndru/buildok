@@ -35,7 +35,7 @@ class Instruction(object):
         payload     (str): Instruction payload as input.
         action (callable): Action handler from installed statements.
         args      (tuple): Action arguments after applying expression to step.
-        kwargs     (dict): Action keyword arguments after applying expression to step.
+        kwargs     (dict): Action keyword arguments after applying expression.
         status     (bool): Instruction status after action handler run.
         output      (str): Instruction output after action handler run.
 
@@ -45,7 +45,7 @@ class Instruction(object):
 
     PATTERN = compile(
         r"^(?:\-|\d+\))\s+(?P<step>.+)(?<=[^\.\:\;])(?P<punct>[\.\:\;]{1})$",
-        IGNORECASE|UNICODE
+        IGNORECASE | UNICODE
     )
 
     class RunType(object):
@@ -61,7 +61,7 @@ class Instruction(object):
 
         END = "."
         AND = ";"
-        ARGS = ":" # has payload
+        ARGS = ":"  # has payload
 
     def __init__(self, order=None, step=None, punct=None):
         self.order = order
@@ -288,7 +288,7 @@ class Instruction(object):
             TypeError: If action is not callable or is not set.
 
         Returns:
-            tuple: (Boolean) True if succeeds, otherwise False; (String) output.
+            tuple: (Bool) True if succeeds, otherwise False; (String) output.
         """
 
         if not callable(self.action):

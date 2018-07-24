@@ -29,7 +29,7 @@ class Shell(object):
         args             (dict): Dictionary of arguments.
     """
 
-    parser = ArgumentParser(description="A tool to automate build steps from README files")
+    parser = ArgumentParser(description="A tool to automate build steps")
     args = {
         ("-g", "--guide"): {
             "action": "store",
@@ -94,7 +94,7 @@ class Shell(object):
         (None, "--package-manager"): {
             "action": "store",
             "dest": "package_manager",
-            "help": "set absolute path to package manager (used to overwrite package manager for install steps)"
+            "help": "set absolute path to package manager"
         },
         (None, "--version"): {
             "action": "store_true",

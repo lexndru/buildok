@@ -66,38 +66,38 @@ class Statement(object):
     """
 
     __actions = {
-        ChangeDir,        # Change current working directory.
-        MakeDir,          # Make a directory or make recursive directories.
-        MakeSymlink,      # Make a symlink for a target source
-        ViewWeb,          # Open a link in default browser.
-        GoogleSearch,     # Perform a Google search and open default browser.
-        DuckDuckGoSearch, # Perform a DuckDuckGo search and open default browser.
-        WikipediaSearch,  # Perform a Wikipedia search and open default browser.
-        GitHubSearch,     # Open a GitHub search in default browser.
-        ShellExec,        # Run a command in shell.
-        ChangeMod,        # Change permissions on file or directory.
-        ChangeOwner,      # Change owner and group on file or directory.
-        Copy,             # Copy files from a given source to a given destination.
-        Move,             # Move files from a given source to a given destination.
-        Remove,           # Remove files from a given source.
-        KillProcess,      # Send SIGTERM signal to a process.
-        Touch,            # Create a new file.
-        EditFile,         # Edit content of an existing file.
-        PipInstallPackage,# Install Python packages.
-        NpmInstallPackage,# Install Node.js packages.
-        InstallPackage,   # Install new package software.
-        UninstallPackage, # Uninstall package software.
-        ReinstallPackage, # Reinstall package software.
-        InvokeTopic,      # Invoke new topic from guide.
-        Noop,             # No operation; nothing to do.
-        EnableService,    # Enable service at boot time.
-        DisableService,   # Disable service at boot time.
-        StatusService,    # Get status of service.
-        StartService,     # Start new service.
-        StopService,      # Stop running service.
-        RestartService,   # Restart running service.
-        ReloadService,    # Reload service configuration.
-        ListDir,          # List files and directories from directory.
+        ChangeDir,          # Change current working directory.
+        MakeDir,            # Make a directory or make recursive directories.
+        MakeSymlink,        # Make a symlink for a target source
+        ViewWeb,            # Open a link in default browser.
+        GoogleSearch,       # Perform a Google search and open default browser.
+        DuckDuckGoSearch,   # Perform a DuckDuckGo search and open browser.
+        WikipediaSearch,    # Perform a Wikipedia search and open browser.
+        GitHubSearch,       # Open a GitHub search in default browser.
+        ShellExec,          # Run a command in shell.
+        ChangeMod,          # Change permissions on file or directory.
+        ChangeOwner,        # Change owner and group on file or directory.
+        Copy,               # Copy files from source to destination.
+        Move,               # Move files from source to destination.
+        Remove,             # Remove files from a given source.
+        KillProcess,        # Send SIGTERM signal to a process.
+        Touch,              # Create a new file.
+        EditFile,           # Edit content of an existing file.
+        PipInstallPackage,  # Install Python packages.
+        NpmInstallPackage,  # Install Node.js packages.
+        InstallPackage,     # Install new package software.
+        UninstallPackage,   # Uninstall package software.
+        ReinstallPackage,   # Reinstall package software.
+        InvokeTopic,        # Invoke new topic from guide.
+        Noop,               # No operation; nothing to do.
+        EnableService,      # Enable service at boot time.
+        DisableService,     # Disable service at boot time.
+        StatusService,      # Get status of service.
+        StartService,       # Start new service.
+        StopService,        # Stop running service.
+        RestartService,     # Restart running service.
+        ReloadService,      # Reload service configuration.
+        ListDir,            # List files and directories from directory.
     }
 
     statements = {}
@@ -120,7 +120,7 @@ class Statement(object):
                 raise SystemExit("Expected action to be callable")
             Log.debug("Scanning action: %s" % action.parse_description())
             for line in action.parse_statements():
-                exp = compile(line.strip(), IGNORECASE|UNICODE)
+                exp = compile(line.strip(), IGNORECASE | UNICODE)
                 cls.statements.update({exp: action})
                 Log.debug("Updating known patterns: %s" % exp.pattern)
         if len(cls.statements) < len(cls.__actions):

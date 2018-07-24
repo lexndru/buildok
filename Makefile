@@ -4,9 +4,9 @@ SRCDIR=buildok
 APPNAME=buildok
 TESTDIR=test
 
-.PHONY: all clean build release update test
+.PHONY: all clean build release update test lint
 
-all: clean update build
+all: clean update lint build
 
 build: update
 	cd /tmp && virtualenv $(SRCDIR) && cd $(SRCDIR)
@@ -29,3 +29,6 @@ docker:
 
 test:
 	docker run -it --rm --name $(APPNAME) -v `pwd`:/opt/src/app -w /opt/src/app $(APPNAME) python test.py
+
+lint:
+	flake8 $(SRCDIR)

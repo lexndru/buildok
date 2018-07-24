@@ -69,6 +69,13 @@ def self_analyze(lines=None, statement=None):
     return all([v == 1 for v in lines.itervalues()])
 
 
+def fmt(fmt, txt):
+    """Text formatter helper.
+    """
+
+    return fmt % txt
+
+
 def analyze(statement, length=80):
     """Analyze all statements and print visual results.
 
@@ -82,25 +89,32 @@ def analyze(statement, length=80):
     for action in statement.get_actions():
         try:
             text = action.parse_description()
-        except:
+        except Exception:
             text = "no description"
-        print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % ("-" * (length-4)))
-        print(u"\033[90m|   |\033[0m \033[96m%-{}s\033[0m \033[90m|\033[0m".format(length-6) % text)
-        print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % ("-" * (length-4)))
+        delimiter = "-" * (length-4)
+        c_txt = u"\033[96m %-{}s \033[0m".format(length-6)
+        r_txt = u"\033[91m %-{}s \033[0m".format(length-6)
+        g_txt = u"\033[92m %-{}s \033[0m".format(length-6)
+        print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % delimiter)
+        print(u"\033[90m|   |\033[0m" + fmt(c_txt, text) + "\033[90m|\033[0m")
+        print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % delimiter)
         for line in action.parse_statements():
             if lines[line] > 1:
                 status = UnicodeIcon.INVALID
-                line_text = u"\033[91m%-{}s\033[0m".format(length-6) % line.strip()
+                line_text = fmt(r_txt, line.strip())
             else:
                 status = UnicodeIcon.VALID
-                line_text = u"\033[92m%-{}s\033[0m".format(length-6) % line.strip()
-            print(u"\033[90m|\033[0m %s \033[90m|\033[0m %s \033[90m|\033[0m" % (status, line_text))
-    print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % ("-" * (length-4)))
+                line_text = fmt(g_txt, line.strip())
+            print_line = u"\033[90m|\033[0m " + status + u" \033[90m|\033[0m"
+            print_line += line_text + u"\033[90m|\033[0m"
+            print(print_line)
+    print(u"\033[90m|---|%-{}s|\033[0m".format(length-4) % delimiter)
     if not results:
         Log.error("Duplicated statements found!")
         for line, times in lines.iteritems():
             if times > 1:
-                Log.error(" - line duplicated %d times: %s" % (times, line.strip()))
+                err = (times, line.strip())
+                Log.error(" - line duplicated %d times: %s" % err)
         Log.error("Please correct these problems before running again.")
     else:
         Log.debug("Everything looks OK!")

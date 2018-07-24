@@ -20,6 +20,7 @@
 
 from shlex import split as cmd_split
 from subprocess import Popen, CalledProcessError, PIPE
+from time import sleep
 
 from buildok.action import Action
 
@@ -49,7 +50,13 @@ class EnableService(Action):
     """
 
     os_distro_trigger = {
-        ("arch", "centos", "coreos", "debian", "fedora", "gentoo", "mageia", "mint", "opensuse", "rhel", "suse", "ubuntu"): ("systemctl enable {service}.service", "systemctl is-enabled {service}.service")
+        ("arch",
+         "centos",
+         "debian",
+         "fedora",
+         "gentoo",
+         "ubuntu"): ("systemctl enable {service}.service",
+                     "systemctl is-enabled {service}.service")
     }
 
     def run(self, srv=None, *args, **kwargs):
@@ -59,13 +66,15 @@ class EnableService(Action):
         try:
             toggle_cmd, check_cmd = cmd
             service_cmd = toggle_cmd.format(service=srv)
-            Log.debug("Service OS (%s) boot: %s ..." % (self.env.os_name, service_cmd))
+            log_status = (self.env.os_name, service_cmd)
+            Log.debug("Service OS (%s) boot: %s ..." % log_status)
             service_output = Popen(cmd_split(service_cmd))
             while service_output.poll() is None:
                 sleep(0.5)
             if 0 != service_output.returncode:
                 return self.fail(u"Service '%s' => failed to enable" % srv)
-            ok, status = EnableService.get_status(cmd_split(check_cmd.format(service=srv)))
+            srv_cmd = cmd_split(check_cmd.format(service=srv))
+            ok, status = EnableService.get_status(srv_cmd)
             output = u"Service '%s' => %s" % (srv, status)
             if ok:
                 self.success(output)

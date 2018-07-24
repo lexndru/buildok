@@ -53,7 +53,8 @@ class EditFile(Action):
             with open(filepath, "a") as file_:
                 file_.write(self.payload)
                 lines = len(self.payload.splitlines())
-            self.success("Changed %d line(s) of content => %s" % (lines, filepath))
+            status = (lines, filepath)
+            self.success("Changed %d line(s) of content => %s" % status)
         except Exception as e:
             self.fail(str(e))
 

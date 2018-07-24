@@ -50,7 +50,12 @@ class StatusService(Action):
     """
 
     os_distro = {
-        ("arch", "centos", "coreos", "debian", "fedora", "gentoo", "mageia", "mint", "opensuse", "rhel", "suse", "ubuntu"): "systemctl status {service}.service"
+        ("arch",
+         "centos",
+         "debian",
+         "fedora",
+         "gentoo",
+         "ubuntu"): "systemctl status {service}.service"
     }
 
     def run(self, srv=None, *args, **kwargs):
@@ -59,7 +64,8 @@ class StatusService(Action):
             return self.fail("Unsupported OS: %s" % self.env.os_name)
         try:
             service_cmd = cmd.format(service=srv)
-            Log.debug("Service OS (%s) status: %s ..." % (self.env.os_name, service_cmd))
+            log_status = (self.env.os_name, service_cmd)
+            Log.debug("Service OS (%s) status: %s ..." % log_status)
             ok, status = StatusService.get_status(cmd_split(service_cmd))
             output = u"Service '%s' => %s" % (srv, status)
             if ok:
