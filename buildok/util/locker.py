@@ -36,7 +36,7 @@ def lock():
 
     if os.path.isfile(LOCK_FILE):
         raise SystemExit("A build might be launched by another process")
-    with open(LOCK_FILE, "a") as _:
+    with open(LOCK_FILE, "a"):
         os.utime(LOCK_FILE, None)
         Log.info("Created temporary lock")
 

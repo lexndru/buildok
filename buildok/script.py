@@ -23,7 +23,6 @@ from __future__ import print_function
 from timeit import default_timer
 from os import getpid
 
-from buildok.statement import Statement
 from buildok.converter import Converter
 from buildok.matcher import Matcher
 from buildok.reader import Reader
@@ -35,18 +34,22 @@ from buildok.statements.invoke import InvokeTopic
 from buildok.util.log import Log
 
 
+PID = getpid()
+
 RUN_INSTRUCTIONS = """
     Buildok is ready! Choose a topic to run, either by it's ID or by name (can
-    be partial match as well). During the runtime ^C (SIGINT) is ignored. Typing
+    be partial match as well). During the runtime, SIGINT is ignored. Typing
     an ID or a name that does not exist will restart the promter. Leaving the
     field blank will end session.
 """
 
 WARNING_UNSAFE_SHELL = u"""\033[91m
-    Detected --unsafe-shell option! Use this option on your own risk only if you
-    really know what you're doing! Please check documentation if you're not sure
-    what --unsafe-shell is, or better yet, remove it and update your guide.\033[0m
+    Detected --unsafe-shell option! Use this option on your own risk only if
+    you really know what you're doing! Please check documentation if you're not
+    sure what --unsafe-shell is, or better yet, remove it and update your
+    guide.\033[0m
 """
+
 
 class Script(object):
     """Automated script wrapper.
@@ -123,21 +126,27 @@ class Script(object):
         """Launch topic and run all steps.
         """
 
-        Log.info("Preparing to run %d steps from topic..." % len(self.topic.get_steps()))
+        total_steps = len(self.topic.get_steps())
+        Log.info("Preparing to run %d steps from topic..." % total_steps)
 
         # Loop steps and run each one
         start_time = default_timer()
         Log.debug("Setting start time: %s" % start_time)
 
+        success_log = u"\033[92m\u2713 (Success)\033[0m \033[93m%s\033[0m"
+        failed_log = u"\033[91m? (Failed)\033[0m \033[95m%s\033[0m"
+        error_log = u"\033[91m? (Error) %s\033[0m"
+
         for self.last_step, step in enumerate(self.steps):
-            Log.debug("Preparing step (%d) %s" % (self.last_step+1, step.get_description()))
+            step_count, step_desc = self.last_step + 1, step.get_description()
+            Log.debug("Preparing step (%d) %s" % (step_count, step_desc))
             Log.info(u"Running \033[93m%s\033[0m ..." % step.get_step())
             try:
                 success, output = step.run()
                 if success:
-                    Log.info(u"\033[92m\u2713 (Success)\033[0m \033[93m%s\033[0m" % output)
+                    Log.info(success_log % output)
                 else:
-                    Log.info(u"\033[91m? (Failed)\033[0m \033[95m%s\033[0m" % output)
+                    Log.info(failed_log % output)
                     if not ignore_fails:
                         failed = True
                         Report.set_error(output)
@@ -146,11 +155,11 @@ class Script(object):
             except KeyboardInterrupt:
                 Log.info("Stopping current step...")
                 Log.warn("Interrupting may lead to unexpected results")
-                Log.debug("Stop master process at your own risk (PID %s)" % getpid())
+                Log.warn("Stop master process at your own risk (PID %s)" % PID)
             except Exception as e:
                 failed = True
                 Report.set_error(e)
-                Log.info(u"\033[91m? (Error) %s\033[0m" % str(e))
+                Log.info(error_log % str(e))
                 break
 
         stop_time = default_timer()
@@ -162,19 +171,20 @@ class Script(object):
 
         # Wrap up...
         Log.debug("Done running steps...")
+        title = self.topic.get_title()
         if failed:
-            Log.info("An error occured while topic '%s' was running" % self.topic.get_title())
+            Log.info("An error occured while topic '%s' was running" % title)
             Report.set_status("Failed")
         else:
-            Log.info("Topic '%s' has ran all steps with no errors" % self.topic.get_title())
+            Log.info("Topic '%s' has ran all steps with no errors" % title)
             Report.set_status("OK")
         Log.debug("Closing...")
 
     def parse(self):
         """Parse guide and extract topics.
 
-        User prompter asks to choose a topic from the selection in order to know
-        what steps are queued.
+        User prompter asks to choose a topic from the selection in order to
+        know what steps are queued.
         """
 
         rr = ReadmeReader(validate=True)
@@ -188,14 +198,19 @@ class Script(object):
             rr.preview(150)
 
         # Scan guide for topics
-        guide = rr.get_guide() if self.args.topic is None else rr.get_guide_by_topic()
+        if self.args.topic is None:
+            guide = rr.get_guide()
+        else:
+            guide = rr.get_guide_by_topic()
         if guide is None:
             Log.fatal("Guide has no such topic")
 
-        # Pair each step with appropriate statement
+        # Prepare guide topics
         self.guide_topics = guide.get_topics()
+
+        # Pair each step with appropriate statement
         if self.args.strict:
-            if not all([Matcher.pair_all(t.get_steps()) for t in self.guide_topics]):
+            if not all([self.pair_steps(t) for t in self.guide_topics]):
                 Report.set_status("Halted")
                 Report.set_error("Unsupported steps")
                 Log.fatal("Cannot continue because of unsupported steps")
@@ -207,7 +222,6 @@ class Script(object):
                         self.guide_topics.remove(t)
 
         # Scan topics
-        topic, steps = None, []
         topics = [t.get_title() for t in guide.get_topics()]
         topics_len = len(topics)
 
@@ -221,7 +235,7 @@ class Script(object):
         Log.info("Found the following topics...")
         print("")
         for pos, name in enumerate(topics):
-            print(("%" + str(len(str(topics_len))+5) + "d) %s") % (pos+1, name))
+            print(("%" + str(len(str(topics_len))+5)+"d) %s") % (pos+1, name))
         print(RUN_INSTRUCTIONS)
 
         # Display warnings
@@ -243,6 +257,12 @@ class Script(object):
         Report.set_total_steps(len(self.steps))
         Report.set_topic(self.topic.get_title())
         return self
+
+    def pair_steps(topic):
+        """Pair topic steps.
+        """
+
+        return Matcher.pair_all(topic.get_steps())
 
     def patch_topic_invoke(self, steps):
         """Scan steps for topic invoking.
@@ -273,24 +293,23 @@ class Script(object):
                 return topic.get_steps()
         return []
 
-
     def get_user_input(self, attempt=0):
         """Prompt user to choose a topic from a list.
 
-        Exists if user leaves blank input or hits C^, otherwise continues until
-        it receives a valid topic.
+        Exists if user leaves blank input or hits C^, otherwise continues
+        until it receives a valid topic.
         """
 
         # Prompt for input
         try:
             if attempt > 0:
-                print("") # spacing only
+                print("")  # spacing only
             user_input = raw_input("    >>> choose topic: ")
             attempt += 1
 
         # Exit on C^
         except KeyboardInterrupt:
-            print("") # append newline after ^C
+            print("")  # append newline after ^C
             Report.set_status("Exit")
             raise Exception
 
@@ -319,9 +338,10 @@ class Script(object):
             for each in self.guide_topics:
                 if each.get_title().strip() == topic.strip():
                     return each
-                if partial_match is not None and each.get_title().startswith(topic) and not drop_partial:
+                prefixed = each.get_title().startswith(topic)
+                if partial_match is not None and prefixed and not drop_partial:
                     drop_partial = True
-                if partial_match is None and each.get_title().startswith(topic):
+                if partial_match is None and prefixed:
                     partial_match = each
             if not drop_partial and partial_match is not None:
                 return partial_match

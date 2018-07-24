@@ -99,7 +99,8 @@ class InstallPackage(Action):
             while install_output.poll() is None:
                 sleep(0.5)
             output = install_output.returncode
-            Log.debug("Running (%s) %s ... %r" % (self.env.os_name, install_cmd, output == 0))
+            log_status = (self.env.os_name, install_cmd, output == 0)
+            Log.debug("Running (%s) %s ... %r" % log_status)
             if 0 == output:
                 installed += 1
         return installed

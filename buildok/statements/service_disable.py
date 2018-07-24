@@ -19,7 +19,8 @@
 # THE SOFTWARE.
 
 from shlex import split as cmd_split
-from subprocess import Popen, CalledProcessError, PIPE
+from subprocess import Popen, CalledProcessError
+from time import sleep
 
 from buildok.statements.service_enable import EnableService
 
@@ -49,7 +50,13 @@ class DisableService(EnableService):
     """
 
     os_distro_trigger = {
-        ("arch", "centos", "coreos", "debian", "fedora", "gentoo", "mageia", "mint", "opensuse", "rhel", "suse", "ubuntu"): ("systemctl disable {service}.service", "systemctl is-disabled {service}.service")
+        ("arch",
+         "centos",
+         "debian",
+         "fedora",
+         "gentoo",
+         "ubuntu"): ("systemctl disable {service}.service",
+                     "systemctl is-disabled {service}.service")
     }
 
     def run(self, srv=None, *args, **kwargs):
@@ -59,13 +66,15 @@ class DisableService(EnableService):
         try:
             toggle_cmd, check_cmd = cmd
             service_cmd = toggle_cmd.format(service=srv)
-            Log.debug("Service OS (%s) boot: %s ..." % (self.env.os_name, service_cmd))
+            log_status = (self.env.os_name, service_cmd)
+            Log.debug("Service OS (%s) boot: %s ..." % log_status)
             service_output = Popen(cmd_split(service_cmd))
             while service_output.poll() is None:
                 sleep(0.5)
             if 0 != service_output.returncode:
                 return self.fail(u"Service '%s' => failed to disable" % srv)
-            ok, status = DisableService.get_status(cmd_split(check_cmd.format(service=srv)))
+            srv_cmd = cmd_split(check_cmd.format(service=srv))
+            ok, status = DisableService.get_status(srv_cmd)
             output = u"Service '%s' => %s" % (srv, status)
             if not ok:
                 self.success(output)

@@ -20,8 +20,9 @@
 
 from __future__ import print_function
 
-from stat import S_ISREG, S_ISFIFO, S_ISSOCK, S_ISLNK, S_ISDIR, S_ISCHR, S_ISBLK
 from os import listdir, stat, getcwd, path as fpath
+from stat import S_ISREG, S_ISFIFO, S_ISSOCK, S_ISLNK, \
+                 S_ISDIR, S_ISCHR, S_ISBLK
 
 from buildok.action import Action
 
@@ -57,17 +58,24 @@ class ListDir(Action):
             content = listdir(path)
             fullpath = fpath.abspath(path)
             self.success("Listing directory => %s" % fullpath)
-            print(u"\033[90m|%-{}s|\033[0m".format(length-4) % ("-" * (length)))
+            delimiter = "-" * (length)
+            print(u"\033[90m|%-{}s|\033[0m".format(length-4) % delimiter)
             s_name = int((length-7) * .8)
             s_size = int((length-7) - s_name)
-            print(u"\033[90m|   |\033[0m %-{}s\033[90m|\033[0m %-{}s\033[90m|\033[0m".format(s_name, s_size) % ("Name", "Size"))
-            print(u"\033[90m|%-{}s|\033[0m".format(length-4) % ("-" * (length)))
+            row = u"\033[90m| %s |\033[0m"
+            row += u" %-{}s\033[90m|\033[0m %-{}s".format(s_name, s_size)
+            row += u"\033[90m|\033[0m"
+            print(row % (" ", "Name", "Size"))
+            print(u"\033[90m|%-{}s|\033[0m".format(length-4) % delimiter)
             for f in content:
-                f_name = f if len(f) <= s_name else f[:s_name-3] + "..."
+                f_name = f if len(f) <= s_name else u"%s..." % f[:s_name-3]
                 f_type = self.get_file_type(fullpath, f)
-                f_size = self.get_file_size(fullpath, f) if f_type == "f" else "--"
-                print(u"\033[90m| %s |\033[0m %-{}s\033[90m|\033[0m %-{}s\033[90m|\033[0m".format(s_name, s_size) % (f_type, f_name, f_size))
-            print(u"\033[90m|%-{}s|\033[0m".format(length-4) % ("-" * (length)))
+                if f_type == "f":
+                    f_size = self.get_file_size(fullpath, f)
+                else:
+                    f_size = "--"
+                print(row % (f_type, f_name, f_size))
+            print(u"\033[90m|%-{}s|\033[0m".format(length-4) % delimiter)
         except Exception as e:
             self.fail(str(e))
 

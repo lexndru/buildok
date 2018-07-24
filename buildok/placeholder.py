@@ -20,22 +20,20 @@
 
 from os import environ
 
-from buildok.util.log import Log
-
 
 class Placeholder(object):
     """Parse guide and replace palceholders with defined values.
 
-    It works with an environment variable PLACEHOLDERS which stores the absolute
-    path to a placeholder-holder file. Data stored inside the file has to follow
-    the format:
+    It works with an environment variable PLACEHOLDERS which stores the
+    absolute path to a placeholder-holder file. Data stored inside the file
+    has to follow the format:
 
         key1=value1
         key2=value2_value2.2
         keyX=768g2eyd921h81z
 
-    Shell arguments can overwrite any key defined in placeholder file. Sample
-    usage:
+    Shell arguments can overwrite any key defined in placeholder file.
+    Sample usage:
 
         --placeholder key1=newValue1 --placeholder key2=newPlaceholder
 
@@ -50,7 +48,7 @@ class Placeholder(object):
         """Configure placeholder class instance.
 
         Args:
-            args (list): Provided by shell; updates internal placeholder storage
+            args (list): Provided by shell; updates internal placeholder memory
 
         Raises:
             Exception: If file provided by environment variable is not valid

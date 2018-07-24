@@ -120,7 +120,7 @@ class Reader(object):
             filepath = path.join(self.PATH, self.READER)
         self.filename = path.abspath(filepath)
         if not self.exists():
-            Log.fatal("Project does not have a proper build file: %s" % filepath)
+            Log.fatal("Project doesn't have proper build file: %s" % filepath)
         return True
 
     def get_build_source(self):

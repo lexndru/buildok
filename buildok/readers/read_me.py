@@ -165,7 +165,9 @@ class ReadmeReader(Reader):
             self: Self instance.
         """
 
-        if self.last_step is None or self.last_step.punct != Instruction.RunType.ARGS:
+        if self.last_step is None:
+            return self
+        if self.last_step.punct != Instruction.RunType.ARGS:
             return self
         newlines, borders = 0, []
         for i, next_line in enumerate(content):
@@ -215,7 +217,8 @@ class ReadmeReader(Reader):
                     line_desc = "instruction (%s)" % self.recent_topic
                     method = "yellow"
                 else:
-                    line_desc = "unsupported instruction (%s)" % self.recent_topic
+                    line_desc = "unsupported (%s)" % self.recent_topic
                     method = "red"
-                return getattr(Console, method)(preview_line, "<--- %s" % line_desc)
+                args = (preview_line, "<--- %s" % line_desc)
+                return getattr(Console, method)(*args)
         return Console.darkgray(preview_line)

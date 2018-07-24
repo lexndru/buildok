@@ -54,9 +54,10 @@ class NpmInstallPackage(Action):
         if len(packages) == 0:
             return self.fail("No Node.js packages to install...")
         try:
-            installed_pkgs = self.install_packages("npm install {packages}", packages)
+            cmd_args = ("npm install {packages}", packages)
+            installed_pkgs = self.install_packages(*cmd_args)
             if installed_pkgs > 0:
-                self.success("Installed %d Node.js package(s)" % installed_pkgs)
+                self.success("Installed %d Nodejs package(s)" % installed_pkgs)
             else:
                 self.fail("Failed to install Node.js packages...")
         except Exception as e:

@@ -20,10 +20,21 @@
 
 from __future__ import print_function
 
-from os import environ, listdir, path, makedirs
+from os import listdir
 from platform import system
 
 from buildok import __build__
+
+
+DISCLAIMER = r"""
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
 
 
 class Sysenv(object):
@@ -42,36 +53,12 @@ class Sysenv(object):
     os_version = ""
     shell_args = None
 
-    # policy_path = "/var/opt/buildok"
-    # policy_name = ".policy"
-    #
-    # @classmethod
-    # def install_policy(cls, policy):
-    #     try:
-    #         policy_data = None
-    #         with open(policy, "r") as fd:
-    #             policy_data = fd.read()
-    #         if policy_data is None:
-    #             raise SystemExit("Invalid policy: not installed")
-    #         if not path.exists(cls.policy_path):
-    #             makedirs(cls.policy_path)
-    #         with open(path.join(cls.policy_path, cls.policy_name), "w") as fd:
-    #             fd.write(policy_data)
-    #     except Exception as e:
-    #         raise SystemExit("Unable to install policy: %s" % str(e))
-
     @classmethod
     def print_disclaimer(cls):
         """Outputs application disclaimer.
         """
 
-        print('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR')
-        print("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,")
-        print("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE")
-        print("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER")
-        print("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,")
-        print("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE")
-        print("SOFTWARE.")
+        print(DISCLAIMER)
 
     @classmethod
     def print_support(cls):
@@ -86,7 +73,8 @@ class Sysenv(object):
         """Outputs application version.
         """
 
-        print("Buildok {} [build {}] {}".format(cls.app_version, __build__, cls.os_version))
+        v_app, v_os = cls.app_version, cls.os_version
+        print("Buildok {} [build {}] {}".format(v_app, __build__, v_os))
 
     @classmethod
     def print_headers(cls):
@@ -141,12 +129,14 @@ class Sysenv(object):
                 with open("/etc/%s" % each_file, "r") as fd:
                     data = fd.readlines()
                 for line in data:
-                    if line.lower().startswith("id") and distro == "":
+                    line_ = line.lower()
+                    if line_.startswith("id") and distro == "":
                         _, distro = line.split("=", 1)
-                    if line.lower().startswith("pretty_name") and pretty_name == "":
+                    if line_.startswith("pretty_name") and pretty_name == "":
                         _, pretty_name = line.split("=", 1)
             os_name = distro.strip()
-            cls.os_version = u"%s (%s)" % (os_name.upper(), pretty_name.strip())
+            clean_name = pretty_name.strip()
+            cls.os_version = u"%s (%s)" % (os_name.upper(), clean_name)
             cls.os_name = os_name
 
         # Extended or full support for bsd systems

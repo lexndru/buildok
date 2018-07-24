@@ -26,7 +26,6 @@ from buildok.version import __version__
 
 from buildok.statement import Statement
 from buildok.script import Script
-from buildok.report import Report
 from buildok.action import Action
 from buildok.placeholder import Placeholder
 
@@ -72,7 +71,7 @@ def main(error=None):
         return analyze(Statement)
 
     # Self-analyze buildok and continue or crash
-    self_analyze(None, Statement) or crash("Run an analyze and correct problems")
+    self_analyze(None, Statement) or crash("Run an analyze and fix problems")
 
     # Setup placeholders
     Placeholder.config(args.placeholder)

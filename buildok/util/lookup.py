@@ -56,15 +56,20 @@ def scan_lookup(statements, lookup, length=80):
 
     # Print lookup
     for action in actions:
-        print(u"\033[90m|%-{}s|\033[0m".format(length-4) % ("-" * (length)))
-        print(u"\033[90m|\033[0m \033[96m%-{}s\033[0m \033[90m|\033[0m".format(length-2) % action.parse_description())
-        print(u"\033[90m|%-{}s|\033[0m".format(length-4) % ("-" * (length)))
+        delimiter = "-" * (length)
+        description = action.parse_description()
+        desc = u"\033[96m %-{}s \033[0m".format(length-2) % description
+        print(u"\033[90m|%-{}s|\033[0m".format(length-4) % delimiter)
+        print(u"\033[90m|\033[0m" + desc + "\033[90m|\033[0m")
+        print(u"\033[90m|%-{}s|\033[0m".format(length-4) % delimiter)
         for text in action.parse_statements():
-            print(u"\033[90m|   |\033[0m \033[95m%-{}s\033[0m \033[90m|\033[0m".format(length-6) % text.strip())
-        print(u"\033[90m|%-{}s|\033[0m".format(length-4) % ("-" * (length)))
+            stmt = u"\033[95m %-{}s \033[0m".format(length-6) % text.strip()
+            print(u"\033[90m|   |\033[0m" + stmt + "\033[90m|\033[0m")
+        print(u"\033[90m|%-{}s|\033[0m".format(length-4) % delimiter)
         for text in action.parse("sample"):
-            print(u"\033[90m|   |\033[0m \033[93m%-{}s\033[0m \033[90m|\033[0m".format(length-6) % text.strip())
+            sample = u"\033[93m %-{}s \033[0m".format(length-6) % text.strip()
+            print(u"\033[90m|   |\033[0m" + sample + "\033[90m|\033[0m")
 
     # Done
-    print(u"\033[90m|%-{}s|\033[0m".format(length-4) % ("-" * (length)))
+    print(u"\033[90m|%-{}s|\033[0m".format(length-4) % delimiter)
     Log.debug("Done...")

@@ -159,9 +159,9 @@ class Topic(object):
     def set_project_topic_pattern(cls, topic_pattern):
         """Change project topic pattern.
 
-        A project topic pattern is a regular expression used to find and extract
-        topics from a build file. By default it matches all lines containing the
-        word "build" in the first 10 characters.
+        A project topic pattern is a regular expression used to find and
+        extract topics from a build file. By default it matches all lines
+        containing the word "build" in the first 10 characters.
 
         Args:
             pattern (str): New topic pattern.

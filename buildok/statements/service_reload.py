@@ -19,10 +19,12 @@
 # THE SOFTWARE.
 
 from shlex import split as cmd_split
-from subprocess import Popen
+from subprocess import Popen, CalledProcessError
 from time import sleep
 
 from buildok.statements.service_status import StatusService
+
+from buildok.util.log import Log
 
 
 class ReloadService(StatusService):
@@ -48,7 +50,12 @@ class ReloadService(StatusService):
     """
 
     os_distro = {
-        ("arch", "centos", "coreos", "debian", "fedora", "gentoo", "mageia", "mint", "opensuse", "rhel", "suse", "ubuntu"): "systemctl reload {service}.service"
+        ("arch",
+         "centos",
+         "debian",
+         "fedora",
+         "gentoo",
+         "ubuntu"): "systemctl reload {service}.service"
     }
 
     def run(self, srv=None, *args, **kwargs):
@@ -57,12 +64,14 @@ class ReloadService(StatusService):
             return self.fail("Unsupported OS: %s" % self.env.os_name)
         try:
             service_cmd = cmd.format(service=srv)
-            Log.debug("Service OS (%s) reload: %s ..." % (self.env.os_name, service_cmd))
+            log_status = (self.env.os_name, service_cmd)
+            Log.debug("Service OS (%s) reload: %s ..." % log_status)
             service_output = Popen(cmd_split(service_cmd))
             while service_output.poll() is None:
                 sleep(0.5)
             if 0 != service_output.returncode:
-                return self.fail(u"Service '%s' => failed to reload configuration" % srv)
+                err_msg = u"Service '%s' => failed to reload configuration"
+                return self.fail(err_msg % srv)
             check_cmd = StatusService.check_systemd()
             ok, status = StatusService.get_status(cmd_split(check_cmd))
             output = u"Service '%s' => %s" % (srv, status)

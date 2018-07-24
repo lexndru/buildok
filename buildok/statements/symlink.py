@@ -34,7 +34,7 @@ class MakeSymlink(Action):
         str: Human readable descriptor message or error.
 
     Raises:
-        OSError: If an invalid `src` or `dst` is provided or if `dst` already exists.
+        OSError: If an invalid `src` or `dst` is provided or if `dst` exists.
 
     Accepted statements:
         ^create symlink from `(?P<src>.+)` to `(?P<dst>.+)`$

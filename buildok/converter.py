@@ -71,6 +71,7 @@ class Converter(object):
             comment = "\n# %s" % step.step
             cmdline = func(*step.args, payload=step.payload)
             lines.append("%s\n%s" % (comment, cmdline))
-        with open(os.path.join(cls.workdir, cls.target_class.filename), "w") as file_:
+        filepath = os.path.join(cls.workdir, cls.target_class.filename)
+        with open(filepath, "w") as file_:
             data = cls.target_class.template.format(body="\n".join(lines))
             file_.write(data)

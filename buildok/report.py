@@ -21,7 +21,6 @@
 from __future__ import print_function
 
 from buildok.util.log import Log
-from buildok.util.console import Console
 
 
 class Report(object):
@@ -90,8 +89,9 @@ class Report(object):
         """Dump report of each saved property.
         """
 
+        ran_status = (cls.current_step, cls.total_steps)
         Log.info("""Topic name: "%s" """ % cls.topic)
-        Log.info("Steps ran successful %d out of %d" % (cls.current_step, cls.total_steps))
+        Log.info("Steps ran successful %d out of %d" % ran_status)
         Log.info("""Last step error: "%s" """ % cls.error)
         Log.info("Runtime %ss" % cls.runtime)
         Log.info("Build %s" % cls.status.upper())

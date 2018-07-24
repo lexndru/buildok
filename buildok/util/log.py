@@ -26,7 +26,7 @@ class Log(object):
     """
 
     config = {
-        r"format": u"%(levelname)8s %(asctime)-15s \033[90m|\033[0m %(message)s"
+        "format": u"%(levelname)8s %(asctime)-15s \033[90m|\033[0m %(message)s"
     }
 
     @classmethod

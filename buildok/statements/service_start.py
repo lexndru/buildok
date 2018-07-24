@@ -19,10 +19,12 @@
 # THE SOFTWARE.
 
 from shlex import split as cmd_split
-from subprocess import Popen
+from subprocess import Popen, CalledProcessError
 from time import sleep
 
 from buildok.statements.service_status import StatusService
+
+from buildok.util.log import Log
 
 
 class StartService(StatusService):
@@ -48,7 +50,12 @@ class StartService(StatusService):
     """
 
     os_distro = {
-        ("arch", "centos", "coreos", "debian", "fedora", "gentoo", "mageia", "mint", "opensuse", "rhel", "suse", "ubuntu"): "systemctl start {service}.service"
+        ("arch",
+         "centos",
+         "debian",
+         "fedora",
+         "gentoo",
+         "ubuntu"): "systemctl start {service}.service"
     }
 
     def run(self, srv=None, *args, **kwargs):
@@ -57,7 +64,8 @@ class StartService(StatusService):
             return self.fail("Unsupported OS: %s" % self.env.os_name)
         try:
             service_cmd = cmd.format(service=srv)
-            Log.debug("Service OS (%s) start: %s ..." % (self.env.os_name, service_cmd))
+            log_status = (self.env.os_name, service_cmd)
+            Log.debug("Service OS (%s) start: %s ..." % log_status)
             service_output = Popen(cmd_split(service_cmd))
             while service_output.poll() is None:
                 sleep(0.5)

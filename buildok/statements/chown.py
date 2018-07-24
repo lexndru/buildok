@@ -77,7 +77,8 @@ class ChangeOwner(Action):
             elif uid == -1 and gid != -1:
                 self.success("Changed group %s => %s" % (group, path))
             elif uid != -1 and gid != -1:
-                self.success("Changed ownwer:group %s:%s => %s" % (owner, group, path))
+                values = (owner, group, path)
+                self.success("Changed ownwer:group %s:%s => %s" % values)
         except OSError as e:
             self.fail(str(e))
 
