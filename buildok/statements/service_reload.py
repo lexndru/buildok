@@ -46,7 +46,7 @@ class ReloadService(StatusService):
         - Reload service config `urandom`.
 
     Expected:
-        Service 'urandom' => active
+        Service 'urandom' => reloaded
     """
 
     os_distro = {
@@ -72,13 +72,7 @@ class ReloadService(StatusService):
             if 0 != service_output.returncode:
                 err_msg = u"Service '%s' => failed to reload configuration"
                 return self.fail(err_msg % srv)
-            check_cmd = StatusService.check_systemd()
-            ok, status = StatusService.get_status(cmd_split(check_cmd))
-            output = u"Service '%s' => %s" % (srv, status)
-            if ok:
-                self.success(output)
-            else:
-                self.fail(output)
+            self.success(u"Service '%s' => reloaded" % srv)
         except CalledProcessError as e:
             self.fail(e.output)
         except Exception as e:

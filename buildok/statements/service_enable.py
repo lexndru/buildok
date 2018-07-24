@@ -19,7 +19,7 @@
 # THE SOFTWARE.
 
 from shlex import split as cmd_split
-from subprocess import Popen, CalledProcessError, PIPE
+from subprocess import Popen, CalledProcessError
 from time import sleep
 
 from buildok.action import Action
@@ -73,27 +73,11 @@ class EnableService(Action):
                 sleep(0.5)
             if 0 != service_output.returncode:
                 return self.fail(u"Service '%s' => failed to enable" % srv)
-            srv_cmd = cmd_split(check_cmd.format(service=srv))
-            ok, status = EnableService.get_status(srv_cmd)
-            output = u"Service '%s' => %s" % (srv, status)
-            if ok:
-                self.success(output)
-            else:
-                self.fail(output)
+            self.success(u"Service '%s' => enabled" % srv)
         except CalledProcessError as e:
             self.fail(e.output)
         except Exception as e:
             self.fail(str(e))
-
-    @classmethod
-    def get_status(cls, service_cmd):
-        proc = Popen(service_cmd, stdout=PIPE)
-        stdout, _ = proc.communicate()
-        for line in stdout.split("\n"):
-            # https://www.freedesktop.org/software/systemd/man/systemctl.html
-            if line.lower().strip().startswith("enabled"):
-                return True, "enabled"
-        return False, "disabled"
 
     @classmethod
     def check_systemd(cls):

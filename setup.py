@@ -21,14 +21,14 @@ setup(name="buildok",
             "build = buildok.bootstrap:main"
         ]
     },
-    version="0.4.1",
+    version="0.4.2",
     description="A tool to automate build steps from README files.",
     long_description=long_description,
     author="Alexandru Catrina",
     author_email="alex@codeissues.net",
     license="MIT",
     url="https://github.com/lexndru/buildok",
-    download_url="https://github.com/lexndru/buildok/archive/v0.4.1.tar.gz",
+    download_url="https://github.com/lexndru/buildok/archive/v0.4.2.tar.gz",
     keywords=["build-tool", "build-automation", "readme", "buildok"],
     classifiers=[
         "Development Status :: 4 - Beta",
